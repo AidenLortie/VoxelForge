@@ -24,11 +24,9 @@ public class BlockState
 
     public BlockState With<T>(string name, T value)
     {
-        var clone = new BlockState(Block, new Dictionary<string, object>(_properties))
-        {
-            _properties = { [name] = value } // replaces or adds
-        };
-        return clone;
+        var newProperties = new Dictionary<string, object>(_properties);
+        newProperties[name] = value; // replaces or adds
+        return new BlockState(Block, newProperties);
     }
 
     public override string ToString()
