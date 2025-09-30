@@ -1,6 +1,6 @@
 ﻿namespace VoxelForge.Shared.Content;
 
-public class Item
+public abstract class Item
 {
     public string Id { get; }
     
