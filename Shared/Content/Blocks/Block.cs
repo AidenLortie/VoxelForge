@@ -5,5 +5,9 @@ public abstract class Block
     public string Id { get; }
     public virtual BlockState DefaultState() => new BlockState(this);
     
+    protected Block(string id)
+    {
+        Id = id;
+    }
 
 }
