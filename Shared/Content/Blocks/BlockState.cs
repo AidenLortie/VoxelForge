@@ -13,15 +13,20 @@ public class BlockState
 
     public bool HasProperty(string name) => _properties.ContainsKey(name);
 
-    public T Get<T>(string name) => (T)_properties[name];
+    public T Get<T>(string name)
+    {
+        if (!_properties.TryGetValue(name, out var value))
+            throw new KeyNotFoundException($"Property '{name}' not found.");
+        if (value is T tValue)
+            return tValue;
+        throw new InvalidOperationException($"Property '{name}' is not of type {typeof(T).Name} (actual type: {value?.GetType().Name ?? "null"}).");
+    }
 
     public BlockState With<T>(string name, T value)
     {
-        var clone = new BlockState(Block, new Dictionary<string, object>(_properties))
-        {
-            _properties = { [name] = value } // replaces or adds
-        };
-        return clone;
+        var newProperties = new Dictionary<string, object>(_properties);
+        newProperties[name] = value; // replaces or adds
+        return new BlockState(Block, newProperties);
     }
 
     public override string ToString()
