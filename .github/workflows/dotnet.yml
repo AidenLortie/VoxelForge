@@ -23,7 +23,7 @@ jobs:
         run: dotnet restore VoxelForge.sln
         
       - name: Build
-        run: dotnet build VoxelForge.sln --no-restore --configuration Release
+        run: dotnet build VoxelForge.sln --no-restore --configuration Debug --verbosity minimal
 
       - name: Run tests
-        run: dotnet test VoxelForge.sln --configureationDebug --verbosity normal
+        run: dotnet test VoxelForge.sln --configureation Debug --verbosity normal
