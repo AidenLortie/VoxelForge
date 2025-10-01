@@ -30,11 +30,7 @@ jobs:
         run: dotnet build VoxelForge.sln --no-restore --configuration Debug --verbosity minimal
 
       - name: Run tests
-        run: dotnet test VoxelForge.sln --configuration Debug --no-build \
-          --verbosity normal --logger "junit;LogFilePath=test-results.xml" \
-          /p:CollectCoverage=true \
-          /p:CoverletOutput=coverage/ \
-          /p:CoverletOutputFormat=cobertura
+        run: dotnet test VoxelForge.sln --configuration Debug --no-build --verbosity normal --logger "junit;LogFilePath=test-results.xml" /p:CollectCoverage=true /p:CoverletOutput=coverage/ /p:CoverletOutputFormat=cobertura
       
       - name: Report test results
         uses: dorny/test-reporter@v1
