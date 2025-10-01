@@ -2,7 +2,7 @@
 
 on:
   push:
-    branches: [ "master", "tests" ] # or "master", or any branch
+    branches: [ "master", "tests", "shared" ] # or "master", or any branch
   pull_request:
     branches: [ "master" ]
 
