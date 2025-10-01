@@ -7,6 +7,7 @@ public class SubChunk
 {
     private BlockState[,,] _blockstates;
     private Vector3 _subChunkRelativePosition; // Position relative to the parent chunk (x, y, z offset in chunk units)
+    
 
     public SubChunk(Vector3 subChunkRelativePosition, BlockState[,,] blockStates)
     {
