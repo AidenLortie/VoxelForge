@@ -2,22 +2,22 @@
 
 public struct Vector2
 {
-    private double _x;
-    private double _y;
+    private float _x;
+    private float _y;
     
-    public double X
+    public float X
     {
         get => _x;
         set => _x = value;
     }
 
-    public double Y
+    public float Y
     {
         get => _y;
         set => _y = value;
     }
     
-    public Vector2(double x, double y = 0)
+    public Vector2(float x, float y = 0)
     {
         _x = x;
         _y = y;
@@ -49,10 +49,10 @@ public struct Vector2
         if (length == 0) return new Vector2(0, 0);
         return new Vector2(X / length, Y / length);
     }
-    public double Dot(Vector2 other) => X * other.X + Y * other.Y;
-    public double Cross(Vector2 other) => X * other.Y - Y * other.X;
-    public double Distance(Vector2 other) => (this - other).Length();
-    public static double Distance(Vector2 a, Vector2 b) => (a - b).Length();
+    public float Dot(Vector2 other) => X * other.X + Y * other.Y;
+    public float Cross(Vector2 other) => X * other.Y - Y * other.X;
+    public float Distance(Vector2 other) => (this - other).Length();
+    public static float Distance(Vector2 a, Vector2 b) => (a - b).Length();
     public Vector2 Lerp(Vector2 target, float t) => this + (target - this) * t;
     public static Vector2 Lerp(Vector2 a, Vector2 b, float t) => a + (b - a) * t;
     

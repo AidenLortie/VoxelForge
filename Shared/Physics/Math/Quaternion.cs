@@ -1,13 +1,15 @@
-﻿namespace VoxelForge.Shared.Physics.Math;
+﻿using System.Numerics;
+
+namespace VoxelForge.Shared.Physics.Math;
 
 public struct Quaternion
 {
-    public double W; // Real part
-    public double X; // i component
-    public double Y; // j component
-    public double Z; // k component
+    public float W; // Real part
+    public float X; // i component
+    public float Y; // j component
+    public float Z; // k component
     
-    public Quaternion(double w, double x, double y, double z)
+    public Quaternion(float w, float x, float y, float z)
     {
         W = w;
         X = x;
@@ -17,7 +19,7 @@ public struct Quaternion
 
     public Quaternion Normalize()
     {
-        double mag = System.Math.Sqrt(W * W + X * X + Y * Y + Z * Z);
+        float mag = (float)System.Math.Sqrt(W * W + X * X + Y * Y + Z * Z);
         if (mag == 0) return new Quaternion(1, 0, 0, 0); // Return identity quaternion if magnitude is zero
         return new Quaternion(W / mag, X / mag, Y / mag, Z / mag);
     }
@@ -34,11 +36,11 @@ public struct Quaternion
     
     public override string ToString() => $"({W}, {X}, {Y}, {Z})";
     
-    public static Quaternion FromAxisAngle(Vector3 axis, double angle)
+    public static Quaternion FromAxisAngle(Vector3 axis, float angle)
     {
         var halfAngle = angle / 2;
-        var s = System.Math.Sin(halfAngle);
-        return new Quaternion(System.Math.Cos(halfAngle), axis.X * s, axis.Y * s, axis.Z * s).Normalize();
+        var s = (float)System.Math.Sin(halfAngle);
+        return new Quaternion((float)System.Math.Cos(halfAngle), axis.X * s, axis.Y * s, axis.Z * s).Normalize();
     }
     
     public Vector3 Rotate(Vector3 v)
@@ -49,4 +51,5 @@ public struct Quaternion
     }
     
     public Quaternion Conjugate() => new Quaternion(W, -X, -Y, -Z);
+
 }
