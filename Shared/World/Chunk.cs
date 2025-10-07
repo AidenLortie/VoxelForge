@@ -5,7 +5,7 @@ namespace VoxelForge.Shared.World;
 
 public class Chunk
 {
-    SubChunk[] SubChunks = new SubChunk[16]; // 16 * 16 = 256 blocks in height
+    public readonly SubChunk[] SubChunks = new SubChunk[16]; // 16 * 16 = 256 blocks in height
     Vector2 ChunkPosition; // Position in chunk coordinates (not block coordinates)
     private World World;
     
@@ -16,7 +16,7 @@ public class Chunk
         // Initialize subchunks
         for (int i = 0; i < 16; i++)
         {
-            SubChunks[i] = new SubChunk(new Vector3(0, i, 0), new BlockState[16,16,16]); // Each subchunk is 16 blocks high
+            SubChunks[i] = new SubChunk(new Vector3(0, i, 0), new ushort[16,16,16]); // Each subchunk is 16 blocks high
         }
     }
     

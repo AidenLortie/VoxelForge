@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/Shared/Lifecycle/Connection/ServerMessages/ChunkDataMessage.cs">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/Shared/Lifecycle/Connection/ServerMessages/ChunkDataMessage.cs" />
+              <option name="originalContent" value="using System.Numerics;&#10;using VoxelForge.Shared.World;&#10;using VoxelForge.Shared.Content.Blocks;&#10;&#10;namespace VoxelForge.Shared.Lifecycle.Connection.ServerMessages;&#10;&#10;public class ChunkDataMessage: IConnectionMessage&lt;Chunk&gt;&#10;{&#10;    public ChunkDataMessage() { }&#10;&#10;    public byte[] EncodeData(Chunk data)&#10;    {&#10;        return data.Serialize();&#10;    }&#10;    &#10;    // Decodes a Chunk from a byte array. Assumes ChunkPosition = Vector2.Zero and World = null.&#10;    public Chunk DecodeData(byte[] data)&#10;    {&#10;        int subChunkCount = 16;&#10;        int size = 16;&#10;        int offset = 0;&#10;        SubChunk[] subChunks = new SubChunk[subChunkCount];&#10;        for (int i = 0; i &lt; subChunkCount; i++)&#10;        {&#10;            BlockState[,,] blockStates = new BlockState[size, size, size];&#10;            for (int x = 0; x &lt; size; x++)&#10;            {&#10;                for (int y = 0; y &lt; size; y++)&#10;                {&#10;                    for (int z = 0; z &lt; size; z++)&#10;                    {&#10;                        int id = BitConverter.ToInt32(data, offset);&#10;                        offset += 4;&#10;                        byte metadata = data[offset++];&#10;                        // TODO: Replace with actual Block lookup by id&#10;                        Block block = BlockRegistry.GetBlockById(id); // You must implement this method&#10;                        blockStates[x, y, z] = new BlockState(block).With(&quot;metadata&quot;, metadata);&#10;                    }&#10;                }&#10;            }&#10;            subChunks[i] = new SubChunk(new Vector3(0, i, 0), blockStates);&#10;        }&#10;        // Use Vector2.Zero and null for World as placeholders&#10;        Chunk chunk = new Chunk(Vector2.Zero, null!);&#10;        // Set subchunks via reflection or internal method if needed&#10;        typeof(Chunk).GetField(&quot;SubChunks&quot;, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(chunk, subChunks);&#10;        return chunk;&#10;    }&#10;}" />
+              <option name="updatedContent" value="using VoxelForge.Shared.World;&#13;&#10;&#13;&#10;namespace VoxelForge.Shared.Lifecycle.Connection.ServerMessages;&#13;&#10;&#13;&#10;public class ChunkDataMessage : IConnectionMessage&lt;Chunk&gt;&#13;&#10;{&#13;&#10;    public ChunkDataMessage() { }&#13;&#10;&#13;&#10;    public byte[] EncodeData(Chunk data)&#13;&#10;    {&#13;&#10;        return data.Serialize();&#13;&#10;    }&#13;&#10;&#13;&#10;    public Chunk DecodeData(byte[] data)&#13;&#10;    {&#13;&#10;        // TODO: Implement deserialization logic for Chunk&#13;&#10;        throw new NotImplementedException();&#13;&#10;    }&#13;&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
