@@ -1,33 +1,29 @@
 ﻿using System.Numerics;
 using VoxelForge.Shared.Content.Blocks;
+using VoxelForge.Shared.Registry;
 
 namespace VoxelForge.Shared.World;
 
 public class SubChunk
 {
-    private BlockState[,,] _blockstates;
+    public const int Size = 16;
+    private ushort[,,] _blockStateIds;
     private Vector3 _subChunkRelativePosition; // Position relative to the parent chunk (x, y, z offset in chunk units)
     
 
-    public SubChunk(Vector3 subChunkRelativePosition, BlockState[,,] blockStates)
+    public SubChunk(Vector3 subChunkRelativePosition, ushort[,,] blockStates)
     {
-        _blockstates = blockStates;
+        _blockStateIds = blockStates;
         _subChunkRelativePosition = subChunkRelativePosition;
     }
     
-    public BlockState GetBlockState(int x, int y, int z) // x, y, z are local coordinates within the subchunk (0-15)
-    {
-        if (x < 0 || x >= 16 || y < 0 || y >= 16 || z < 0 || z >= 16)
-            throw new ArgumentOutOfRangeException("Block coordinates must be between 0 and 15.");
-        return _blockstates[x, y, z];
-    }
+    public BlockState GetBlockState(int x, int y, int z)
+        => BlockStateRegistry.GetState(_blockStateIds[x, y, z]);
     
-    public void SetBlockState(int x, int y, int z, BlockState state) // x, y, z are local coordinates within the subchunk (0-15)
-    {
-        if (x < 0 || x >= 16 || y < 0 || y >= 16 || z < 0 || z >= 16)
-            throw new ArgumentOutOfRangeException("Block coordinates must be between 0 and 15.");
-        _blockstates[x, y, z] = state;
-    }
+    public ushort GetBlockStateId(int x, int y, int z) => _blockStateIds[x, y, z];
+
+    public void SetBlockState(int x, int y, int z, BlockState state)
+        => _blockStateIds[x, y, z] = BlockStateRegistry.GetId(state);
     
     public Vector3 GetWorldPosition(Vector3 chunkWorldPosition)
     {
