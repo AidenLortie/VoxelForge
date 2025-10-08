@@ -8,4 +8,8 @@
         <RootNamespace>VoxelForge.Client</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="Connection\" />
+    </ItemGroup>
+
 </Project>
