@@ -10,11 +10,20 @@ using VoxelForge.Shared.World;
 
 namespace VoxelForge.Server;
 
+/// <summary>
+/// Represents the VoxelForge game server.
+/// Manages the authoritative world state and handles client connections and requests.
+/// </summary>
 public class Server
 {
     private readonly INetworkBridge _bridge;
     private readonly World _world;
 
+    /// <summary>
+    /// Initializes a new Server instance with the specified network bridge.
+    /// Creates a test world with a single chunk filled with demo data.
+    /// </summary>
+    /// <param name="bridge">The network bridge to use for communication with clients.</param>
     public Server(INetworkBridge bridge)
     {
         _bridge = bridge;
@@ -66,6 +75,10 @@ public class Server
         });
     }
 
+    /// <summary>
+    /// Handles a chunk request from a client by sending the requested chunk if it exists.
+    /// </summary>
+    /// <param name="packet">The chunk request packet from the client.</param>
     private void HandleChunkRequest(ChunkRequestPacket packet)
     {
         // For now, just send the single chunk we have if it matches
@@ -80,6 +93,10 @@ public class Server
         }
     }
 
+    /// <summary>
+    /// Handles a block update from a client by updating the block in the server's world.
+    /// </summary>
+    /// <param name="packet">The block update packet from the client.</param>
     private void HandleBlockUpdate(UpdateBlockPacket packet)
     {
         try
@@ -105,6 +122,11 @@ public class Server
         }
     }
 
+    /// <summary>
+    /// Runs the server main loop asynchronously.
+    /// Sends initial world state to clients and processes packets continuously.
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task RunAsync()
     {
         Console.WriteLine("Server started. Waiting for packets...");
@@ -127,6 +149,11 @@ public class Server
         }
     }
 
+    /// <summary>
+    /// Main entry point for the server application.
+    /// Listens on localhost:25565 and accepts a single client connection.
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public static async Task Main()
     {
         // Setup TCP listener
