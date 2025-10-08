@@ -9,11 +9,19 @@ using VoxelForge.Shared.World;
 
 namespace VoxelForge.Client;
 
+/// <summary>
+/// Represents the VoxelForge game client.
+/// Handles connection to the server, receiving world data, and sending player actions.
+/// </summary>
 public class Client
 {
     private readonly INetworkBridge _bridge;
     private readonly World _world;
 
+    /// <summary>
+    /// Initializes a new Client instance with the specified network bridge.
+    /// </summary>
+    /// <param name="bridge">The network bridge to use for communication with the server.</param>
     public Client(INetworkBridge bridge)
     {
         _bridge = bridge;
@@ -25,6 +33,10 @@ public class Client
         _world = new World(1, 1, 1);
     }
 
+    /// <summary>
+    /// Main entry point for the client application.
+    /// Connects to the server on localhost:25565 and enters the main game loop.
+    /// </summary>
     public static void Main()
     {
         // Connect to server
@@ -51,16 +63,28 @@ public class Client
         }
     }
 
+    /// <summary>
+    /// Sends a packet to the server.
+    /// </summary>
+    /// <param name="packet">The packet to send.</param>
     public void SendPacket(Packet packet)
     {
         _bridge.Send(packet);
     }
     
+    /// <summary>
+    /// Polls the network bridge to process incoming packets.
+    /// Should be called regularly in the game loop.
+    /// </summary>
     public void Poll()
     {
         _bridge.Poll();
     }
 
+    /// <summary>
+    /// Registers packet handlers for all incoming packet types.
+    /// Call this once after creating the client to begin processing server messages.
+    /// </summary>
     public void StartListening()
     {
         _bridge.RegisterHandler<CheckPacket>(_ => { Console.WriteLine("Received check packet from server."); });
@@ -101,11 +125,23 @@ public class Client
         });
     }
 
+    /// <summary>
+    /// Requests a specific chunk from the server.
+    /// </summary>
+    /// <param name="chunkX">The X coordinate of the chunk to request.</param>
+    /// <param name="chunkZ">The Z coordinate of the chunk to request.</param>
     public void RequestChunk(float chunkX, float chunkZ)
     {
         SendPacket(new ChunkRequestPacket(chunkX, chunkZ));
     }
 
+    /// <summary>
+    /// Sends a block update to the server.
+    /// </summary>
+    /// <param name="x">The world X coordinate of the block.</param>
+    /// <param name="y">The world Y coordinate of the block.</param>
+    /// <param name="z">The world Z coordinate of the block.</param>
+    /// <param name="blockStateId">The new block state ID.</param>
     public void UpdateBlock(int x, int y, int z, ushort blockStateId)
     {
         SendPacket(new UpdateBlockPacket(x, y, z, blockStateId));

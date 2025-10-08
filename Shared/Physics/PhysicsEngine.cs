@@ -1,22 +1,42 @@
 ﻿namespace VoxelForge.Shared.Physics;
 
+/// <summary>
+/// Main physics simulation engine for VoxelForge.
+/// Manages physics bodies, applies forces, and handles collision detection.
+/// </summary>
 public class PhysicsEngine
 {
     Mesh[] _meshes; // All meshes in the physics engine
     
+    /// <summary>
+    /// Initializes a new PhysicsEngine with no meshes.
+    /// </summary>
     public PhysicsEngine()
     {
         _meshes = Array.Empty<Mesh>();
     }
     
+    /// <summary>
+    /// Adds a mesh with physics bodies to the physics engine.
+    /// </summary>
+    /// <param name="mesh">The mesh to add.</param>
     public void AddMesh(Mesh mesh)
     {
         Array.Resize(ref _meshes, _meshes.Length + 1);
         _meshes[^1] = mesh;
     }
     
+    /// <summary>
+    /// Gets all meshes currently registered in the physics engine.
+    /// </summary>
+    /// <returns>An array of all meshes.</returns>
     public Mesh[] GetMeshes() => _meshes;
     
+    /// <summary>
+    /// Updates the physics simulation by one tick.
+    /// Applies forces, updates physics bodies, and handles collisions.
+    /// </summary>
+    /// <param name="deltaTime">The time elapsed since the last tick in seconds.</param>
     public void Tick(float deltaTime)
     {
         foreach (var mesh in _meshes)
