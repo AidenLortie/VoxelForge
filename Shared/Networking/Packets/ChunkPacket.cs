@@ -59,7 +59,7 @@ namespace VoxelForge.Shared.Networking.Packets
             ChunkData = compound;
             float posX = (compound["PosX"] as TagFloat)?.Value ?? 0;
             float posZ = (compound["PosZ"] as TagFloat)?.Value ?? 0;
-            Chunk = new Chunk(new System.Numerics.Vector2(posX, posZ));
+            Chunk = new Chunk(new System.Numerics.Vector2(posX / 16, posZ / 16));
 
             foreach ((string key, var subChunkTag) in compound)
             {
