@@ -74,7 +74,7 @@ namespace VoxelForge.Shared.Networking.Packets
                 int y = int.Parse(parts[1], CultureInfo.InvariantCulture);
                 int z = int.Parse(parts[2], CultureInfo.InvariantCulture);
 
-                var subChunk = Chunk.GetOrCreateSubChunk(x, y, z);
+                var subChunk = Chunk.GetOrCreateSubChunk(x * 16, y * 16, z * 16);
                 var blockStates = subChunkData["BlockStates"] as TagByteArray;
                 var bytes = blockStates?.Value;
                 int index = 0;
