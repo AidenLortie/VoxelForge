@@ -13,6 +13,8 @@ public static class TagFactory
         TagType.Float => new TagFloat(),
         TagType.Double => new TagDouble(),
         TagType.String => new TagString(),
+        // TagType.End is used here as a sentinel value to indicate that the list's element type is not yet set.
+        // This matches the NBT specification, where an empty list has TagType.End as its type.
         TagType.List => new TagList(null, TagType.End),
         TagType.Compound => new TagCompound(),
         _ => throw new NotSupportedException($"Unknown Tag Type: {type}")
