@@ -10,41 +10,134 @@ using VoxelForge.Shared.World;
 
 namespace VoxelForge.Server;
 
+/// <summary>
+/// Represents the VoxelForge game server.
+/// Manages the authoritative world state and handles client connections and requests.
+/// </summary>
 public class Server
 {
     private readonly INetworkBridge _bridge;
-    private readonly Chunk _chunk = new(Vector2.Zero);
+    private readonly World _world;
 
+    /// <summary>
+    /// Initializes a new Server instance with the specified network bridge.
+    /// Creates a test world with a single chunk filled with demo data.
+    /// </summary>
+    /// <param name="bridge">The network bridge to use for communication with clients.</param>
     public Server(INetworkBridge bridge)
     {
         _bridge = bridge;
+        
+        // Initialize default blocks
+        DefaultBlocks.Initialize();
+        
+        // Create a simple world with one chunk
+        _world = new World(1, 1, 1);
+        var chunk = new Chunk(Vector2.Zero);
+        
+        // Fill chunk with some test data
         for(int x = 0; x < 16; x++)
         {
             for(int z = 0; z < 16; z++)
             {
-                for (int y = 0; y < 16 * 16; y++)
+                for (int y = 0; y < 256; y++)
                 {
                     if (y % 16 == 0)
                     {
-                        _chunk.SetBlockStateId(x, y, z, 1);
+                        chunk.SetBlockStateId(x, y, z, 1); // Stone
                     }
                     else
                     {
-                        _chunk.SetBlockStateId(x, y, z, 0);
+                        chunk.SetBlockStateId(x, y, z, 0); // Air
                     }
                 }
             }
         }
         
+        _world.SetChunk(0, 0, 0, chunk);
+        
+        // Register packet handlers
         bridge.RegisterHandler<CheckPacket>(packet =>
         {
             Console.WriteLine("Received check packet from client. with timestamp: " + packet.Timestamp);
-        } );
+        });
+        
+        bridge.RegisterHandler<ChunkRequestPacket>(packet =>
+        {
+            Console.WriteLine($"Received chunk request for ({packet.ChunkX}, {packet.ChunkZ})");
+            HandleChunkRequest(packet);
+        });
+        
+        bridge.RegisterHandler<UpdateBlockPacket>(packet =>
+        {
+            Console.WriteLine($"Received block update at ({packet.X}, {packet.Y}, {packet.Z}) with state {packet.BlockStateId}");
+            HandleBlockUpdate(packet);
+        });
     }
 
+    /// <summary>
+    /// Handles a chunk request from a client by sending the requested chunk if it exists.
+    /// </summary>
+    /// <param name="packet">The chunk request packet from the client.</param>
+    private void HandleChunkRequest(ChunkRequestPacket packet)
+    {
+        // For now, just send the single chunk we have if it matches
+        if (packet.ChunkX == 0 && packet.ChunkZ == 0)
+        {
+            var chunk = _world.GetChunk(0, 0, 0);
+            if (chunk != null)
+            {
+                _bridge.Send(new ChunkPacket(chunk));
+                Console.WriteLine("Sent chunk to client");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handles a block update from a client by updating the block in the server's world.
+    /// </summary>
+    /// <param name="packet">The block update packet from the client.</param>
+    private void HandleBlockUpdate(UpdateBlockPacket packet)
+    {
+        try
+        {
+            // Determine which chunk this block belongs to
+            int chunkX = packet.X / 16;
+            int chunkZ = packet.Z / 16;
+            
+            // For simplicity, we only have one chunk at 0,0
+            if (chunkX == 0 && chunkZ == 0)
+            {
+                var chunk = _world.GetChunk(0, 0, 0);
+                if (chunk != null)
+                {
+                    chunk.SetBlockStateId(packet.X % 16, packet.Y, packet.Z % 16, packet.BlockStateId);
+                    Console.WriteLine($"Updated block at ({packet.X}, {packet.Y}, {packet.Z})");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating block: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Runs the server main loop asynchronously.
+    /// Sends initial world state to clients and processes packets continuously.
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task RunAsync()
     {
         Console.WriteLine("Server started. Waiting for packets...");
+        
+        // Send initial world sync - send all chunks to client
+        foreach (var chunk in _world.GetAllChunks())
+        {
+            _bridge.Send(new ChunkPacket(chunk));
+            Console.WriteLine("Sent initial chunk to client");
+        }
+        
         while (true)
         {
             _bridge.Poll(); // Let bridge process queued data
@@ -56,6 +149,11 @@ public class Server
         }
     }
 
+    /// <summary>
+    /// Main entry point for the server application.
+    /// Listens on localhost:25565 and accepts a single client connection.
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public static async Task Main()
     {
         // Setup TCP listener

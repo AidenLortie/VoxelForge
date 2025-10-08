@@ -8,6 +8,8 @@ public class PacketRegistry
     public static readonly Dictionary<string, Func<Packet>> Factories = new()
     {
         {"Check", () => new CheckPacket()},
-        {"ChunkData", () => new ChunkPacket()}
+        {"ChunkData", () => new ChunkPacket()},
+        {"ChunkRequest", () => new ChunkRequestPacket()},
+        {"UpdateBlock", () => new UpdateBlockPacket()}
     };
 }
