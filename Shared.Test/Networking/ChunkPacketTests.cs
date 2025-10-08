@@ -36,7 +36,7 @@ public class ChunkPacketTests
         // Simulate serialization -> deserialization
         var tagCompound = packet.Write();
 
-        var receivedPacket = new ChunkPacket(null!);
+        var receivedPacket = new ChunkPacket();
         receivedPacket.Read(tagCompound);
 
         var reconstructed = receivedPacket.Chunk;
