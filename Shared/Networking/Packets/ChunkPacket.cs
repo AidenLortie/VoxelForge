@@ -16,6 +16,8 @@ namespace VoxelForge.Shared.Networking.Packets
         {
             Chunk = chunk;
             ChunkData = new TagCompound("ChunkData");
+            ChunkData.Add("PosX", new TagFloat(chunk.GetWorldPosition().X));
+            ChunkData.Add("PosZ", new TagFloat(chunk.GetWorldPosition().Z));
 
             foreach (var subChunk in chunk.SubChunks)
             {
@@ -44,6 +46,7 @@ namespace VoxelForge.Shared.Networking.Packets
             }
         }
 
+        // Parameterless constructor for deserialization
         public ChunkPacket() { }
 
         public override TagCompound Write()
@@ -54,7 +57,9 @@ namespace VoxelForge.Shared.Networking.Packets
         public override void Read(TagCompound compound)
         {
             ChunkData = compound;
-            Chunk ??= new Chunk(); // create if not already assigned
+            float posX = (compound["PosX"] as TagFloat)?.Value ?? 0;
+            float posZ = (compound["PosZ"] as TagFloat)?.Value ?? 0;
+            Chunk = new Chunk(new System.Numerics.Vector2(posX / 16, posZ / 16));
 
             foreach ((string key, var subChunkTag) in compound)
             {
@@ -69,7 +74,7 @@ namespace VoxelForge.Shared.Networking.Packets
                 int y = int.Parse(parts[1], CultureInfo.InvariantCulture);
                 int z = int.Parse(parts[2], CultureInfo.InvariantCulture);
 
-                var subChunk = Chunk.GetOrCreateSubChunk(x, y, z);
+                var subChunk = Chunk.GetOrCreateSubChunk(x * 16, y * 16, z * 16);
                 var blockStates = subChunkData["BlockStates"] as TagByteArray;
                 var bytes = blockStates?.Value;
                 int index = 0;
