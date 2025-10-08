@@ -37,7 +37,67 @@ public class Client
     /// Main entry point for the client application.
     /// Connects to the server on localhost:25565 and enters the main game loop.
     /// </summary>
-    public static void Main()
+    /// <param name="args">Command line arguments. Use --rendering to enable OpenTK window.</param>
+    public static void Main(string[] args)
+    {
+        // Check if rendering mode is enabled
+        bool useRendering = args.Contains("--rendering");
+        
+        if (useRendering)
+        {
+            Console.WriteLine("Starting VoxelForge client with rendering enabled...");
+            RunWithRendering();
+        }
+        else
+        {
+            Console.WriteLine("Starting VoxelForge client in console mode...");
+            Console.WriteLine("Use --rendering flag to enable OpenTK window");
+            RunConsoleMode();
+        }
+    }
+    
+    /// <summary>
+    /// Runs the client with OpenTK rendering window.
+    /// </summary>
+    private static void RunWithRendering()
+    {
+        // Connect to server
+        var clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        
+        try
+        {
+            clientSocket.Connect(IPAddress.Loopback, 25565);
+            Console.WriteLine("Connected to server at localhost:25565");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to connect to server: {ex.Message}");
+            Console.WriteLine("Make sure the server is running on localhost:25565");
+            return;
+        }
+
+        var stream = new NetworkStream(clientSocket);
+        var bridgeNet = new NetworkBridgeNet(stream, PacketRegistry.Factories);
+
+        var client = new Client(bridgeNet);
+
+        // Start listening for incoming packets
+        client.StartListening();
+
+        // Request the initial chunk
+        client.SendPacket(new ChunkRequestPacket(0, 0));
+        
+        // Create and run the rendering window
+        using var window = new Rendering.GameWindow(client);
+        window.Run();
+        
+        Console.WriteLine("Window closed");
+    }
+    
+    /// <summary>
+    /// Runs the client in console-only mode (original behavior).
+    /// </summary>
+    private static void RunConsoleMode()
     {
         // Connect to server
         var clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
