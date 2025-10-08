@@ -57,7 +57,7 @@ public class TagCompound : Tag, IEnumerable<KeyValuePair<string, Tag>>
             {
                 writer.Write(0);
             }
-            tag.WritePayload(writer);
+            tag.Write(writer);
         }
         writer.Write((byte)TagType.End);
     }
