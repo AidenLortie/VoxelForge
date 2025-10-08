@@ -7,5 +7,9 @@
         <Nullable>enable</Nullable>
         <RootNamespace>VoxelForge.Server</RootNamespace>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Connection\" />
+    </ItemGroup>
     
 </Project>
