@@ -48,7 +48,10 @@ public class Chunk
 
     public SubChunk GetOrCreateSubChunk(int x, int y, int z)
     {
-        return SubChunks[y];
+        if (y < 0 || y >= 256)
+            throw new ArgumentOutOfRangeException("Y coordinate must be between 0 and 255.");
+        int subChunkIndex = y / 16;
+        return SubChunks[subChunkIndex];
     }
     
     public Vector2 GetChunkPosition()
