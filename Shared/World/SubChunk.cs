@@ -16,6 +16,11 @@ public class SubChunk
         _blockStateIds = blockStates;
         _subChunkRelativePosition = subChunkRelativePosition;
     }
+
+    public void SetBlockStateId(int x, int y, int z, ushort id)
+    {
+        _blockStateIds[x, y, z] = id;
+    }
     
     public BlockState GetBlockState(int x, int y, int z)
         => BlockStateRegistry.GetState(_blockStateIds[x, y, z]);
@@ -34,8 +39,8 @@ public class SubChunk
     {
         return _subChunkRelativePosition;
     }
-    
-    public void Update()
+
+    public void Update(World world, Chunk chunk)
     {
         // Placeholder for any per-tick updates needed for the subchunk
     }

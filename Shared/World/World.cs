@@ -23,13 +23,13 @@ public class World
     {
         foreach (var chunk in Chunks)
         {
-            chunk?.Update();
+            chunk?.Update(this);
         }
     }
     
     public void UpdateChunk(int x, int y, int z)
     {
         var chunk = GetChunk(x, y, z);
-        chunk?.Update();
+        chunk?.Update(this);
     }
 }

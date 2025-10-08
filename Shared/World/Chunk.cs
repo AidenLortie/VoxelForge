@@ -7,18 +7,18 @@ public class Chunk
 {
     public readonly SubChunk[] SubChunks = new SubChunk[16]; // 16 * 16 = 256 blocks in height
     Vector2 ChunkPosition; // Position in chunk coordinates (not block coordinates)
-    private World World;
     
-    public Chunk(Vector2 chunkPosition, World parentWorld)
+    public Chunk(Vector2 chunkPosition)
     {
         ChunkPosition = chunkPosition;
-        World = parentWorld;
         // Initialize subchunks
         for (int i = 0; i < 16; i++)
         {
             SubChunks[i] = new SubChunk(new Vector3(0, i, 0), new ushort[16,16,16]); // Each subchunk is 16 blocks high
         }
     }
+
+    public Chunk() { }
     
     public BlockState GetBlockState(int x, int y, int z) // x, y, z are global block coordinates
     {
@@ -45,17 +45,22 @@ public class Chunk
         int localZ = z % 16;
         SubChunks[subChunkIndex].SetBlockState(localX, localY, localZ, state);
     }
+
+    public SubChunk GetOrCreateSubChunk(int x, int y, int z)
+    {
+        return SubChunks[y / 16];
+    }
     
     public Vector2 GetChunkPosition()
     {
         return ChunkPosition;
     }
     
-    public void Update()
+    public void Update(World world)
     {
         foreach (var subChunk in SubChunks)
         {
-            subChunk.Update();
+            subChunk.Update(world, this);
         }
     }
     
