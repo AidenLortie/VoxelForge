@@ -52,5 +52,5 @@ public class TagLongArray : Tag
         }
     }
     
-    public override string ToString() => $"{{ {Name ?? "(unnamed)"} : {Value.Length} bytes }}";
+    public override string ToString() => $"{{ {Name ?? "(unnamed)"} : {Value.Length} elements, {Value.Length * sizeof(long)} bytes }}";
 }
