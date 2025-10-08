@@ -29,7 +29,7 @@ public class NetworkBridgeLocal : INetworkBridge
         while (_incoming.TryDequeue(out var packet))
         {
             if (_handlers.TryGetValue(packet.GetType(), out var handler))
-                ((Action<Packet>)handler).Invoke(packet);
+                handler.DynamicInvoke(packet);
         }
     }
 }

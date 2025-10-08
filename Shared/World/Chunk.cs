@@ -48,7 +48,7 @@ public class Chunk
 
     public SubChunk GetOrCreateSubChunk(int x, int y, int z)
     {
-        return SubChunks[y / 16];
+        return SubChunks[y];
     }
     
     public Vector2 GetChunkPosition()
