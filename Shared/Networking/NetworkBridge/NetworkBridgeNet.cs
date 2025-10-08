@@ -9,7 +9,7 @@ public class NetworkBridgeNet : INetworkBridge
     private readonly BinaryWriter _writer;
     private readonly BinaryReader _reader;
     private readonly Dictionary<string, Func<Packet>> _packetRegistry;
-    private readonly Dictionary<Type, Delegate> _handlers = new();
+    private readonly Dictionary<Type, Action<Packet>> _handlers = new();
 
     public NetworkBridgeNet(NetworkStream stream, Dictionary<string, Func<Packet>> packetRegistry)
     {
@@ -28,25 +28,36 @@ public class NetworkBridgeNet : INetworkBridge
 
     public void RegisterHandler<T>(Action<T> handler) where T : Packet
     {
-        _handlers[typeof(T)] = handler;
+        // Wrap the typed handler in an Action<Packet>
+        _handlers[typeof(T)] = packet => handler((T)packet);
     }
 
     public void Poll()
     {
-        if (_stream.DataAvailable)
+        // Only read when there’s something available
+        if (!_stream.DataAvailable)
+            return;
+
+        TagCompound tag = new();
+        tag.Read(_reader);
+        string packetId = tag.Name;
+
+        if (!_packetRegistry.TryGetValue(packetId, out var packetFactory))
         {
-            TagCompound tag = new TagCompound();
-            tag.Read(_reader);
-            string packetId = tag.Name;
-            if (_packetRegistry.TryGetValue(packetId, out var packetFactory))
-            {
-                Packet packet = packetFactory();
-                packet.Read(tag);
-                if (_handlers.TryGetValue(packet.GetType(), out var handler))
-                {
-                    ((Action<Packet>)handler).Invoke(packet);
-                }
-            }
+            Console.WriteLine($"[WARN] Unknown packet ID: {packetId}");
+            return;
+        }
+
+        Packet packet = packetFactory();
+        packet.Read(tag);
+
+        if (_handlers.TryGetValue(packet.GetType(), out var handler))
+        {
+            handler(packet);
+        }
+        else
+        {
+            Console.WriteLine($"[WARN] No handler registered for packet type {packet.GetType().Name}");
         }
     }
 }

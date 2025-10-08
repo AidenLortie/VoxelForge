@@ -7,6 +7,7 @@ public class PacketRegistry
 {
     public static readonly Dictionary<string, Func<Packet>> Factories = new()
     {
-        ["ChunkData"] = () => new ChunkPacket()
+        {"Check", () => new CheckPacket()},
+        {"ChunkData", () => new ChunkPacket()}
     };
 }

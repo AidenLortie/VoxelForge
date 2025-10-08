@@ -46,6 +46,18 @@ public class Chunk
         SubChunks[subChunkIndex].SetBlockState(localX, localY, localZ, state);
     }
 
+    public void SetBlockStateId(int x, int y, int z, ushort blockStateId)
+    {
+        if (y < 0 || y >= 256)
+            throw new ArgumentOutOfRangeException("Y coordinate must be between 0 and 255.");
+        
+        int subChunkIndex = y / 16;
+        int localY = y % 16;
+        int localX = x % 16;
+        int localZ = z % 16;
+        SubChunks[subChunkIndex].SetBlockStateId(localX, localY, localZ, blockStateId);
+    }
+
     public SubChunk GetOrCreateSubChunk(int x, int y, int z)
     {
         if (y < 0 || y >= 256)

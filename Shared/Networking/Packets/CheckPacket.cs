@@ -7,7 +7,10 @@ public class CheckPacket : Packet
     public override string Id => "Check";
     public long Timestamp { get; set; }
 
-    public CheckPacket() { }
+    public CheckPacket()
+    {
+        Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    }
 
     public CheckPacket(long timestamp)
     {
