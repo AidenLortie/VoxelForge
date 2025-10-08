@@ -93,4 +93,37 @@ public class ChunkPacketTests
             Assert.Equal(origSub.GetBlockStateId(x, y, z), recvSub.GetBlockStateId(x, y, z));
         }
     }
+
+    [Fact]
+    public void ChunkPacket_Should_Preserve_Chunk_Position()
+    {
+        // Arrange - Create chunk at a non-zero position
+        var chunkPos = new Vector2(5, 3);
+        var chunk = new Chunk(chunkPos);
+        
+        // Set blocks in multiple subchunks to verify they're placed correctly
+        chunk.SubChunks[0].SetBlockStateId(1, 2, 3, 100);
+        chunk.SubChunks[7].SetBlockStateId(4, 5, 6, 200);
+        chunk.SubChunks[15].SetBlockStateId(7, 8, 9, 300);
+
+        var packet = new ChunkPacket(chunk);
+
+        // Act - Serialize and deserialize
+        var tagCompound = packet.Write();
+        var receivedPacket = new ChunkPacket();
+        receivedPacket.Read(tagCompound);
+        var receivedChunk = receivedPacket.Chunk;
+
+        // Assert - Verify chunk position is preserved
+        var originalWorldPos = chunk.GetWorldPosition();
+        var receivedWorldPos = receivedChunk.GetWorldPosition();
+        
+        Assert.Equal(originalWorldPos.X, receivedWorldPos.X);
+        Assert.Equal(originalWorldPos.Z, receivedWorldPos.Z);
+        
+        // Assert - Verify blocks are in correct subchunks (not all in SubChunks[0])
+        Assert.Equal((ushort)100, receivedChunk.SubChunks[0].GetBlockStateId(1, 2, 3));
+        Assert.Equal((ushort)200, receivedChunk.SubChunks[7].GetBlockStateId(4, 5, 6));
+        Assert.Equal((ushort)300, receivedChunk.SubChunks[15].GetBlockStateId(7, 8, 9));
+    }
 }
