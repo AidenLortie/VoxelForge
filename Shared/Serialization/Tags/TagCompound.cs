@@ -34,29 +34,55 @@ public class TagCompound : Tag, IEnumerable<KeyValuePair<string, Tag>>
 
     public override void Write(BinaryWriter writer)
     {
+        if (Name != null)
+        {
+            var nameBytes = System.Text.Encoding.UTF8.GetBytes(Name);
+            writer.Write(nameBytes.Length);
+            writer.Write(nameBytes);
+        }
+        else
+        {
+            writer.Write(0);
+        }
         foreach (var tag in _tags.Values)
         {
             writer.Write((byte)tag.Type);
-            writer.Write(tag.Name ?? "");
+            if (tag.Name != null)
+            {
+                var childNameBytes = System.Text.Encoding.UTF8.GetBytes(tag.Name);
+                writer.Write(childNameBytes.Length);
+                writer.Write(childNameBytes);
+            }
+            else
+            {
+                writer.Write(0);
+            }
             tag.Write(writer);
         }
-
         writer.Write((byte)TagType.End);
     }
 
     public override void Read(BinaryReader reader)
     {
+        int nameLen = reader.ReadInt32();
+        if (nameLen > 0)
+            Name = System.Text.Encoding.UTF8.GetString(reader.ReadBytes(nameLen));
+        else
+            Name = null;
         _tags.Clear();
         while (true)
         {
             TagType type = (TagType)reader.ReadByte();
-            if (type == TagType.End) break;
-                
-            string name = reader.ReadString();
+            if (type == TagType.End)
+                break;
+            int childNameLen = reader.ReadInt32();
+            string? childName = null;
+            if (childNameLen > 0)
+                childName = System.Text.Encoding.UTF8.GetString(reader.ReadBytes(childNameLen));
             Tag tag = TagFactory.Create(type);
-            tag.Name = name;
+            tag.Name = childName;
             tag.Read(reader);
-            _tags[name] = tag;
+            _tags[childName ?? ""] = tag;
         }
     }
 

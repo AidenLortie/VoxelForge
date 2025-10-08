@@ -2,21 +2,21 @@
 
 namespace VoxelForge.Shared.Serialization.Tags;
 
-public class TagByteArray : Tag
+public class TagLongArray : Tag
 {
-    public byte[] Value { get; set; }
-    public TagByteArray(byte[] value, string? name = null)
+    public long[] Value { get; set; }
+    public TagLongArray(long[] value, string? name = null)
     {
         Value = value;
         Name = name;
     }
 
-    public TagByteArray(string? name = null)
+    public TagLongArray(string? name = null)
     {
-        Value = new byte[1];
+        Value = new long[1];
         Name = name;
     }
-    public override TagType Type => TagType.ByteArray;
+    public override TagType Type => TagType.LongArray;
 
     public override void Write(BinaryWriter writer)
     {
@@ -31,7 +31,10 @@ public class TagByteArray : Tag
             writer.Write(0);
         }
         writer.Write(Value.Length);
-        writer.Write(Value);
+        foreach (long i in Value)
+        {
+            writer.Write(i);
+        }
     }
 
     public override void Read(BinaryReader reader)
@@ -42,8 +45,12 @@ public class TagByteArray : Tag
         else
             Name = null;
         int length = reader.ReadInt32();
-        Value = reader.ReadBytes(length);
+        Value = new long[length];
+        for (int i = 0; i < length; i++)
+        {
+            Value[i] = reader.ReadInt64();
+        }
     }
     
-    public override string ToString() => $"{{ {Name ?? "(unnamed)"} : {Value.Length} bytes }}";
+    public override string ToString() => $"{{ {Name ?? "(unnamed)"} : {Value.Length} elements, {Value.Length * sizeof(long)} bytes }}";
 }

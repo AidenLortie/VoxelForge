@@ -17,6 +17,9 @@ public static class TagFactory
         // This matches the NBT specification, where an empty list has TagType.End as its type.
         TagType.List => new TagList(null, TagType.End),
         TagType.Compound => new TagCompound(),
+        TagType.IntArray => new TagIntArray(),
+        TagType.LongArray => new TagLongArray(),
+        TagType.ByteArray => new TagByteArray(),
         _ => throw new NotSupportedException($"Unknown Tag Type: {type}")
     };
 }
