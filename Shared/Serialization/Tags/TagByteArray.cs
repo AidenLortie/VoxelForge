@@ -8,9 +8,6 @@ public class TagByteArray : Tag
         Value = value;
         Name = name;
     }
-    
-    
-    
     public override TagType Type => TagType.ByteArray;
 
     public override void Write(BinaryWriter writer)
