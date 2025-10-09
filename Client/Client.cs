@@ -18,6 +18,11 @@ public class Client
     private readonly INetworkBridge _bridge;
     private readonly World _world;
     private Action<Chunk>? _chunkUpdateHandler;
+    
+    /// <summary>
+    /// Gets the client's local world.
+    /// </summary>
+    public World World => _world;
 
     /// <summary>
     /// Initializes a new Client instance with the specified network bridge.

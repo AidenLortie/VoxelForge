@@ -17,6 +17,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
     private ShaderProgram? _chunkShader;
     private ChunkRenderer? _chunkRenderer;
     private Texture? _blockTexture;
+    private Player.PlayerController? _player;
     private Vector2 _lastMousePos;
     private bool _firstMove = true;
     
@@ -81,6 +82,9 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         _camera = new Camera(new Vector3(128, 60, 128));
         _camera.AspectRatio = (float)Size.X / Size.Y;
         
+        // Initialize player controller
+        _player = new Player.PlayerController(_client.World, new Vector3(128, 60, 128));
+        
         // Load shaders
         string vertexSource = File.ReadAllText("Rendering/Shaders/chunk.vert");
         string fragmentSource = File.ReadAllText("Rendering/Shaders/chunk.frag");
@@ -104,7 +108,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
     {
         base.OnUpdateFrame(args);
         
-        if (_camera == null)
+        if (_camera == null || _player == null)
             return;
         
         // Handle input
@@ -114,23 +118,61 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
             Close(); // Close window when Escape is pressed
         }
         
-        float speed = _camera.MovementSpeed * (float)args.Time;
+        float deltaTime = (float)args.Time;
         
-        // WASD movement
+        // Calculate movement direction from camera
+        Vector3 forward = _camera.Forward;
+        forward.Y = 0; // Don't move vertically with forward/backward
+        if (forward.Length > 0)
+            forward = Vector3.Normalize(forward);
+        
+        Vector3 right = _camera.Right;
+        right.Y = 0; // Don't move vertically with strafe
+        if (right.Length > 0)
+            right = Vector3.Normalize(right);
+        
+        // WASD movement with player controller
+        Vector3 moveDir = Vector3.Zero;
         if (keyboardState.IsKeyDown(Keys.W))
-            _camera.MoveForward(speed);
+            moveDir += forward;
         if (keyboardState.IsKeyDown(Keys.S))
-            _camera.MoveForward(-speed);
+            moveDir -= forward;
         if (keyboardState.IsKeyDown(Keys.A))
-            _camera.MoveRight(-speed);
+            moveDir -= right;
         if (keyboardState.IsKeyDown(Keys.D))
-            _camera.MoveRight(speed);
+            moveDir += right;
         
-        // Space/Shift for up/down
+        if (moveDir.Length > 0)
+        {
+            moveDir = Vector3.Normalize(moveDir);
+            _player.Move(moveDir, 10.0f); // 10 units/sec movement speed
+        }
+        
+        // Jump with Space
         if (keyboardState.IsKeyDown(Keys.Space))
-            _camera.MoveUp(speed);
-        if (keyboardState.IsKeyDown(Keys.LeftShift))
-            _camera.MoveUp(-speed);
+        {
+            _player.Jump();
+        }
+        
+        // Toggle gravity with G
+        if (keyboardState.IsKeyPressed(Keys.G))
+        {
+            _player.GravityEnabled = !_player.GravityEnabled;
+            Console.WriteLine($"Gravity: {(_player.GravityEnabled ? "ON" : "OFF")}");
+        }
+        
+        // Toggle collision with C
+        if (keyboardState.IsKeyPressed(Keys.C))
+        {
+            _player.CollisionEnabled = !_player.CollisionEnabled;
+            Console.WriteLine($"Collision: {(_player.CollisionEnabled ? "ON" : "OFF")}");
+        }
+        
+        // Update player physics
+        _player.Update(deltaTime);
+        
+        // Sync camera position to player (at eye level)
+        _camera.Position = _player.Position + new Vector3(0, 1.6f, 0);
         
         // Poll network for incoming packets
         _client.Poll();
