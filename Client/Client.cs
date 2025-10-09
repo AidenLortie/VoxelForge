@@ -203,6 +203,13 @@ public class Client
     {
         _bridge.RegisterHandler<CheckPacket>(_ => { Console.WriteLine("Received check packet from server."); });
         
+        _bridge.RegisterHandler<BlockStateRegistryPacket>(packet =>
+        {
+            Console.WriteLine($"Received BlockState registry ({packet.StateIdToString.Count} states)");
+            BlockStateRegistry.ImportMappings(packet.StateIdToString);
+            Console.WriteLine("BlockState registry synchronized with server");
+        });
+        
         _bridge.RegisterHandler<ChunkPacket>(packet => 
         { 
             Console.WriteLine($"Received chunk packet from server at ({packet.Chunk.GetWorldPosition().X}, {packet.Chunk.GetWorldPosition().Z})");

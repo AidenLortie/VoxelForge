@@ -146,6 +146,11 @@ public class Server
     {
         Console.WriteLine("Server started. Waiting for packets...");
         
+        // Send BlockState registry first
+        var registryMappings = BlockStateRegistry.ExportMappings();
+        _bridge.Send(new BlockStateRegistryPacket(registryMappings));
+        Console.WriteLine($"Sent BlockState registry ({registryMappings.Count} states)");
+        
         // Send initial world sync - send all chunks to client
         foreach (var chunk in _world.GetAllChunks())
         {
