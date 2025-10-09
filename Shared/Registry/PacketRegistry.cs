@@ -11,6 +11,9 @@ public class PacketRegistry
         {"ChunkData", () => new ChunkPacket()},
         {"ChunkRequest", () => new ChunkRequestPacket()},
         {"UpdateBlock", () => new UpdateBlockPacket()},
-        {"BlockStateRegistry", () => new BlockStateRegistryPacket()}
+        {"BlockStateRegistry", () => new BlockStateRegistryPacket()},
+        {"EntitySpawn", () => new EntitySpawnPacket()},
+        {"EntityUpdate", () => new EntityUpdatePacket()},
+        {"EntityDespawn", () => new EntityDespawnPacket()}
     };
 }
