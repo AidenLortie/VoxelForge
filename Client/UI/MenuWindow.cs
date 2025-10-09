@@ -48,8 +48,8 @@ public class MenuWindow : OpenTK.Windowing.Desktop.GameWindow
         GL.ClearColor(0.15f, 0.15f, 0.2f, 1.0f);
         GL.Enable(EnableCap.Blend);
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-        
-        _textRenderer = new TextRenderer(ClientSize.X, ClientSize.Y);
+
+        _textRenderer = new TextRenderer(ClientSize.X, ClientSize.Y, "./Assets/Fonts/Miracode.ttf");
     }
     
     protected override void OnResize(ResizeEventArgs e)
