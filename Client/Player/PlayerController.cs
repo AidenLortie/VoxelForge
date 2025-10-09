@@ -88,11 +88,19 @@ public class PlayerController
         }
         
         _position += movement;
-        
-        // Decay horizontal velocity (friction)
-        _velocity.X *= 0.8f;
-        _velocity.Z *= 0.8f;
-        
+
+        if (IsOnGround)
+        {
+            // Decay horizontal velocity (friction)
+            _velocity.X *= 0.8f;
+            _velocity.Z *= 0.8f;
+        }
+        else
+        {
+            _velocity.X *= 0.99f;
+            _velocity.Z *= 0.99f;
+        }
+
         // Stop small velocities
         if (Math.Abs(_velocity.X) < 0.01f) _velocity.X = 0;
         if (Math.Abs(_velocity.Z) < 0.01f) _velocity.Z = 0;
@@ -105,19 +113,21 @@ public class PlayerController
     /// <param name="speed">Movement speed</param>
     public void Move(Vector3 direction, float speed)
     {
-        if (IsOnGround)
+        speed *= 0.9f;
+        if (!IsOnGround)
         {
-            _velocity.X += direction.X * speed;
-            _velocity.Z += direction.Z * speed;
+            speed *= 0.6f;
+        }
+        _velocity.X += direction.X * speed;
+        _velocity.Z += direction.Z * speed;
             
-            // Clamp horizontal speed
-            float horizontalSpeed = new Vector2(_velocity.X, _velocity.Z).Length;
-            if (horizontalSpeed > speed)
-            {
-                float scale = speed / horizontalSpeed;
-                _velocity.X *= scale;
-                _velocity.Z *= scale;
-            }
+        // Clamp horizontal speed
+        float horizontalSpeed = new Vector2(_velocity.X, _velocity.Z).Length;
+        if (horizontalSpeed > speed)
+        {
+            float scale = speed / horizontalSpeed;
+            _velocity.X *= scale;
+            _velocity.Z *= scale;
         }
     }
     
@@ -128,7 +138,7 @@ public class PlayerController
     {
         if (IsOnGround && GravityEnabled)
         {
-            _velocity.Y = JumpVelocity;
+            _velocity += new Vector3(0, JumpVelocity, 0);
             IsOnGround = false;
         }
     }

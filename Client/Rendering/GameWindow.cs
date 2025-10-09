@@ -156,7 +156,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
             if (moveDir.Length > 0)
             {
                 moveDir = Vector3.Normalize(moveDir);
-                _player.Move(moveDir, 10.0f); // 10 units/sec movement speed
+                _player.Move(moveDir, 5.0f); // 5 units/sec movement speed
             }
             
             // Jump with Space
