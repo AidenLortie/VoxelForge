@@ -18,11 +18,19 @@ public class Client
     private readonly INetworkBridge _bridge;
     private readonly World _world;
     private Action<Chunk>? _chunkUpdateHandler;
+    private int _chunksLoaded = 0;
+    private int _chunksRequested = 0;
+    private bool _initialLoadComplete = false;
     
     /// <summary>
     /// Gets the client's local world.
     /// </summary>
     public World World => _world;
+    
+    /// <summary>
+    /// Gets whether the initial chunk loading is complete.
+    /// </summary>
+    public bool IsInitialLoadComplete => _initialLoadComplete;
 
     /// <summary>
     /// Initializes a new Client instance with the specified network bridge.
@@ -56,6 +64,7 @@ public class Client
     /// <param name="viewDistance">Number of chunks in each direction to request</param>
     public void RequestChunksAround(int centerX, int centerZ, int viewDistance = 4)
     {
+        _chunksRequested = 0;
         for (int x = centerX - viewDistance; x <= centerX + viewDistance; x++)
         {
             for (int z = centerZ - viewDistance; z <= centerZ + viewDistance; z++)
@@ -64,9 +73,11 @@ public class Client
                 if (x >= 0 && x < 16 && z >= 0 && z < 16)
                 {
                     RequestChunk(x, z);
+                    _chunksRequested++;
                 }
             }
         }
+        Console.WriteLine($"Requested {_chunksRequested} chunks");
     }
 
     /// <summary>
@@ -200,6 +211,18 @@ public class Client
             var chunkPos = packet.Chunk.GetChunkPosition();
             _world.SetChunk((int)chunkPos.X, 0, (int)chunkPos.Y, packet.Chunk);
             Console.WriteLine("Stored chunk in local world");
+            
+            // Track loading progress
+            _chunksLoaded++;
+            if (_chunksRequested > 0 && _chunksLoaded >= _chunksRequested && !_initialLoadComplete)
+            {
+                _initialLoadComplete = true;
+                Console.WriteLine($"Initial chunk loading complete! ({_chunksLoaded}/{_chunksRequested} chunks)");
+            }
+            else if (_chunksRequested > 0)
+            {
+                Console.WriteLine($"Loading progress: {_chunksLoaded}/{_chunksRequested} chunks");
+            }
             
             // Notify handler if set
             _chunkUpdateHandler?.Invoke(packet.Chunk);

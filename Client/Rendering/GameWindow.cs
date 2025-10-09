@@ -20,6 +20,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
     private Player.PlayerController? _player;
     private Vector2 _lastMousePos;
     private bool _firstMove = true;
+    private bool _showLoadingScreen = true;
     
     /// <summary>
     /// Initializes a new GameWindow with the specified client.
@@ -111,6 +112,13 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         if (_camera == null || _player == null)
             return;
         
+        // Check if initial loading is complete
+        if (_showLoadingScreen && _client.IsInitialLoadComplete)
+        {
+            _showLoadingScreen = false;
+            Console.WriteLine("Loading complete - player controls enabled");
+        }
+        
         // Handle input
         var keyboardState = KeyboardState;
         if (keyboardState.IsKeyDown(Keys.Escape))
@@ -120,56 +128,60 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         
         float deltaTime = (float)args.Time;
         
-        // Calculate movement direction from camera
-        Vector3 forward = _camera.Forward;
-        forward.Y = 0; // Don't move vertically with forward/backward
-        if (forward.Length > 0)
-            forward = Vector3.Normalize(forward);
-        
-        Vector3 right = _camera.Right;
-        right.Y = 0; // Don't move vertically with strafe
-        if (right.Length > 0)
-            right = Vector3.Normalize(right);
-        
-        // WASD movement with player controller
-        Vector3 moveDir = Vector3.Zero;
-        if (keyboardState.IsKeyDown(Keys.W))
-            moveDir += forward;
-        if (keyboardState.IsKeyDown(Keys.S))
-            moveDir -= forward;
-        if (keyboardState.IsKeyDown(Keys.A))
-            moveDir -= right;
-        if (keyboardState.IsKeyDown(Keys.D))
-            moveDir += right;
-        
-        if (moveDir.Length > 0)
+        // Only allow player movement after loading is complete
+        if (!_showLoadingScreen)
         {
-            moveDir = Vector3.Normalize(moveDir);
-            _player.Move(moveDir, 10.0f); // 10 units/sec movement speed
+            // Calculate movement direction from camera
+            Vector3 forward = _camera.Forward;
+            forward.Y = 0; // Don't move vertically with forward/backward
+            if (forward.Length > 0)
+                forward = Vector3.Normalize(forward);
+            
+            Vector3 right = _camera.Right;
+            right.Y = 0; // Don't move vertically with strafe
+            if (right.Length > 0)
+                right = Vector3.Normalize(right);
+            
+            // WASD movement with player controller
+            Vector3 moveDir = Vector3.Zero;
+            if (keyboardState.IsKeyDown(Keys.W))
+                moveDir += forward;
+            if (keyboardState.IsKeyDown(Keys.S))
+                moveDir -= forward;
+            if (keyboardState.IsKeyDown(Keys.A))
+                moveDir -= right;
+            if (keyboardState.IsKeyDown(Keys.D))
+                moveDir += right;
+            
+            if (moveDir.Length > 0)
+            {
+                moveDir = Vector3.Normalize(moveDir);
+                _player.Move(moveDir, 10.0f); // 10 units/sec movement speed
+            }
+            
+            // Jump with Space
+            if (keyboardState.IsKeyDown(Keys.Space))
+            {
+                _player.Jump();
+            }
+            
+            // Toggle gravity with G
+            if (keyboardState.IsKeyPressed(Keys.G))
+            {
+                _player.GravityEnabled = !_player.GravityEnabled;
+                Console.WriteLine($"Gravity: {(_player.GravityEnabled ? "ON" : "OFF")}");
+            }
+            
+            // Toggle collision with C
+            if (keyboardState.IsKeyPressed(Keys.C))
+            {
+                _player.CollisionEnabled = !_player.CollisionEnabled;
+                Console.WriteLine($"Collision: {(_player.CollisionEnabled ? "ON" : "OFF")}");
+            }
+            
+            // Update player physics
+            _player.Update(deltaTime);
         }
-        
-        // Jump with Space
-        if (keyboardState.IsKeyDown(Keys.Space))
-        {
-            _player.Jump();
-        }
-        
-        // Toggle gravity with G
-        if (keyboardState.IsKeyPressed(Keys.G))
-        {
-            _player.GravityEnabled = !_player.GravityEnabled;
-            Console.WriteLine($"Gravity: {(_player.GravityEnabled ? "ON" : "OFF")}");
-        }
-        
-        // Toggle collision with C
-        if (keyboardState.IsKeyPressed(Keys.C))
-        {
-            _player.CollisionEnabled = !_player.CollisionEnabled;
-            Console.WriteLine($"Collision: {(_player.CollisionEnabled ? "ON" : "OFF")}");
-        }
-        
-        // Update player physics
-        _player.Update(deltaTime);
         
         // Sync camera position to player (at eye level)
         _camera.Position = _player.Position + new Vector3(0, 1.6f, 0);
@@ -213,12 +225,27 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         // Clear the screen and depth buffer
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         
-        // Render chunks if camera and renderer are initialized
-        if (_camera != null && _chunkRenderer != null)
+        // Show loading screen if initial load is not complete
+        if (_showLoadingScreen)
         {
-            var view = _camera.GetViewMatrix();
-            var projection = _camera.GetProjectionMatrix();
-            _chunkRenderer.Render(view, projection);
+            // Render a darker background during loading
+            GL.ClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            // Note: In a real game, you'd render text here saying "Loading terrain..."
+            // For now, we just show a darker screen
+        }
+        else
+        {
+            // Restore normal background color
+            GL.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            
+            // Render chunks if camera and renderer are initialized
+            if (_camera != null && _chunkRenderer != null)
+            {
+                var view = _camera.GetViewMatrix();
+                var projection = _camera.GetProjectionMatrix();
+                _chunkRenderer.Render(view, projection);
+            }
         }
         
         // Swap front and back buffers to display rendered frame
