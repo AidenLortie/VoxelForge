@@ -290,17 +290,30 @@ This project is in active development. License information will be added in a fu
 
 ## 🎯 Roadmap
 
-Future enhancements planned:
+### Rendering System (In Progress)
+A comprehensive roadmap for integrating OpenTK 5.0.0-pre.15 with the client system is available:
+- **Full Roadmap**: [RENDERING_SYSTEM_ROADMAP.md](RENDERING_SYSTEM_ROADMAP.md) - Complete development plan with 8 phases
+- **Quick Reference**: [RENDERING_SYSTEM_QUICK_REFERENCE.md](RENDERING_SYSTEM_QUICK_REFERENCE.md) - Quick start guide and common patterns
+
+Key phases include:
+1. OpenTK Foundation & Window Management
+2. Chunk Rendering System (greedy meshing, textures, lighting)
+3. Client-Side Player System (movement, collision, block interaction)
+4. Entity System Foundation (network packets, entity data)
+5. Entity Rendering (models, animations)
+6. Server Authority Migration (player and entity authority)
+7. Optimization & Polish
+8. Advanced Features (advanced lighting, AI, particles)
+
+### Future Enhancements
 - [ ] Chunk compression for network efficiency
 - [ ] Delta updates for partial chunk changes
 - [ ] Client-side chunk caching and LOD
-- [ ] Rendering system integration
 - [ ] More block types with complex properties
 - [ ] Server-side validation of block updates
 - [ ] Multiplayer support with multiple clients
 - [ ] World persistence and saving
 - [ ] Biome generation system
-- [ ] Entity system implementation
 
 ## 📧 Contact
 

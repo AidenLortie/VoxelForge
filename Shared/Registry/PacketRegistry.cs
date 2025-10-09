@@ -10,6 +10,10 @@ public class PacketRegistry
         {"Check", () => new CheckPacket()},
         {"ChunkData", () => new ChunkPacket()},
         {"ChunkRequest", () => new ChunkRequestPacket()},
-        {"UpdateBlock", () => new UpdateBlockPacket()}
+        {"UpdateBlock", () => new UpdateBlockPacket()},
+        {"BlockStateRegistry", () => new BlockStateRegistryPacket()},
+        {"EntitySpawn", () => new EntitySpawnPacket()},
+        {"EntityUpdate", () => new EntityUpdatePacket()},
+        {"EntityDespawn", () => new EntityDespawnPacket()}
     };
 }

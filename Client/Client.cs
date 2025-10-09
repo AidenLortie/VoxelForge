@@ -9,19 +9,19 @@ using VoxelForge.Shared.World;
 
 namespace VoxelForge.Client;
 
-/// <summary>
-/// Represents the VoxelForge game client.
-/// Handles connection to the server, receiving world data, and sending player actions.
-/// </summary>
+// Game client - handles connection to server, receives world data, sends player actions
 public class Client
 {
     private readonly INetworkBridge _bridge;
     private readonly World _world;
+    private Action<Chunk>? _chunkUpdateHandler;
+    private int _chunksLoaded = 0;
+    private int _chunksRequested = 0;
+    private bool _initialLoadComplete = false;
+    
+    public World World => _world;
+    public bool IsInitialLoadComplete => _initialLoadComplete;
 
-    /// <summary>
-    /// Initializes a new Client instance with the specified network bridge.
-    /// </summary>
-    /// <param name="bridge">The network bridge to use for communication with the server.</param>
     public Client(INetworkBridge bridge)
     {
         _bridge = bridge;
@@ -29,15 +29,117 @@ public class Client
         // Initialize default blocks
         DefaultBlocks.Initialize();
         
-        // Create a local world
-        _world = new World(1, 1, 1);
+        // Create a local world to match server (16x16 chunks)
+        _world = new World(16, 1, 16);
+    }
+    
+    /// <summary>
+    /// Sets a handler that will be called when a chunk is received or updated.
+    /// </summary>
+    /// <param name="handler">The handler to call with the chunk</param>
+    public void SetChunkUpdateHandler(Action<Chunk> handler)
+    {
+        _chunkUpdateHandler = handler;
+    }
+    
+    /// <summary>
+    /// Requests chunks around a position with the specified view distance.
+    /// </summary>
+    // Request chunks in a grid around center position
+    public void RequestChunksAround(int centerX, int centerZ, int viewDistance = 4)
+    {
+        _chunksRequested = 0;
+        for (int x = centerX - viewDistance; x <= centerX + viewDistance; x++)
+        {
+            for (int z = centerZ - viewDistance; z <= centerZ + viewDistance; z++)
+            {
+                // Only request chunks within world bounds
+                if (x >= 0 && x < 16 && z >= 0 && z < 16)
+                {
+                    RequestChunk(x, z);
+                    _chunksRequested++;
+                }
+            }
+        }
+        Console.WriteLine($"Requested {_chunksRequested} chunks");
     }
 
-    /// <summary>
-    /// Main entry point for the client application.
-    /// Connects to the server on localhost:25565 and enters the main game loop.
-    /// </summary>
-    public static void Main()
+    // Main entry point - shows menu then starts client in selected mode
+    public static void Main(string[] args)
+    {
+        // Check for command line override
+        bool forceRendering = args.Contains("--rendering");
+        bool forceConsole = args.Contains("--console");
+        
+        if (forceRendering)
+        {
+            Console.WriteLine("Starting in single player mode (command line override)...");
+            RunSinglePlayer();
+        }
+        else if (forceConsole)
+        {
+            Console.WriteLine("Starting in multiplayer mode (command line override)...");
+            RunMultiplayer();
+        }
+        else
+        {
+            // Show menu and let user choose
+            using var menu = new UI.MenuWindow();
+            menu.Run();
+            
+            if (menu.ShouldStartSinglePlayer)
+            {
+                RunSinglePlayer();
+            }
+            else if (menu.ShouldStartMultiplayer)
+            {
+                RunMultiplayer();
+            }
+            else
+            {
+                Console.WriteLine("Exiting...");
+            }
+        }
+    }
+    
+    // Run in single player mode with local server
+    private static void RunSinglePlayer()
+    {
+        // Create local bridges for client and server
+        var clientBridge = new NetworkBridgeLocal();
+        var serverBridge = new NetworkBridgeLocal();
+        clientBridge.ConnectTo(serverBridge);
+        
+        // Start local server in background
+        var server = new VoxelForge.Server.Server(serverBridge);
+        Task.Run(async () => await server.RunAsync());
+        
+        Console.WriteLine("Local server started");
+
+        var client = new Client(clientBridge);
+
+        // Start listening for incoming packets
+        client.StartListening();
+
+        // Request chunks around spawn (8, 8 is center of 16x16 world)
+        client.RequestChunksAround(8, 8, 4); // Request 4 chunks in each direction
+        
+        // Create and run the rendering window
+        using var window = new Rendering.GameWindow(client);
+        
+        // Set up chunk update handler
+        client.SetChunkUpdateHandler(chunk =>
+        {
+            window.ChunkRenderer?.UpdateChunk(chunk);
+        });
+        
+        window.Run();
+        
+        Console.WriteLine("Window closed");
+    }
+    
+    // Run in multiplayer mode connecting to network server
+    private static void RunMultiplayer()
     {
         // Connect to server
         var clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -51,43 +153,46 @@ public class Client
         // Start listening for incoming packets
         client.StartListening();
 
-        // Request the initial chunk
-        client.SendPacket(new ChunkRequestPacket(0, 0));
+        // Request chunks around spawn (same as single player)
+        client.RequestChunksAround(8, 8, 4); // Request 4 chunks in each direction
         
-        // Main loop
-        while (true)
+        // Create and run the rendering window (same as single player)
+        using var window = new Rendering.GameWindow(client);
+        
+        // Set up chunk update handler
+        client.SetChunkUpdateHandler(chunk =>
         {
-            client.Poll();
-            client.SendPacket(new CheckPacket());
-            Task.Delay(100).Wait();
-        }
+            window.ChunkRenderer?.UpdateChunk(chunk);
+        });
+        
+        window.Run();
+        
+        Console.WriteLine("Window closed");
     }
 
-    /// <summary>
-    /// Sends a packet to the server.
-    /// </summary>
-    /// <param name="packet">The packet to send.</param>
+    // Send packet to server
     public void SendPacket(Packet packet)
     {
         _bridge.Send(packet);
     }
     
-    /// <summary>
-    /// Polls the network bridge to process incoming packets.
-    /// Should be called regularly in the game loop.
-    /// </summary>
+    // Poll network bridge to process incoming packets - call regularly in game loop
     public void Poll()
     {
         _bridge.Poll();
     }
 
-    /// <summary>
-    /// Registers packet handlers for all incoming packet types.
-    /// Call this once after creating the client to begin processing server messages.
-    /// </summary>
+    // Register packet handlers - call once after creating client
     public void StartListening()
     {
         _bridge.RegisterHandler<CheckPacket>(_ => { Console.WriteLine("Received check packet from server."); });
+        
+        _bridge.RegisterHandler<BlockStateRegistryPacket>(packet =>
+        {
+            Console.WriteLine($"Received BlockState registry ({packet.StateIdToString.Count} states)");
+            BlockStateRegistry.ImportMappings(packet.StateIdToString);
+            Console.WriteLine("BlockState registry synchronized with server");
+        });
         
         _bridge.RegisterHandler<ChunkPacket>(packet => 
         { 
@@ -97,6 +202,21 @@ public class Client
             var chunkPos = packet.Chunk.GetChunkPosition();
             _world.SetChunk((int)chunkPos.X, 0, (int)chunkPos.Y, packet.Chunk);
             Console.WriteLine("Stored chunk in local world");
+            
+            // Track loading progress
+            _chunksLoaded++;
+            if (_chunksRequested > 0 && _chunksLoaded >= _chunksRequested && !_initialLoadComplete)
+            {
+                _initialLoadComplete = true;
+                Console.WriteLine($"Initial chunk loading complete! ({_chunksLoaded}/{_chunksRequested} chunks)");
+            }
+            else if (_chunksRequested > 0)
+            {
+                Console.WriteLine($"Loading progress: {_chunksLoaded}/{_chunksRequested} chunks");
+            }
+            
+            // Notify handler if set
+            _chunkUpdateHandler?.Invoke(packet.Chunk);
         });
         
         _bridge.RegisterHandler<ChunkRequestPacket>(_ => { Console.WriteLine("Received chunk request from server."); });

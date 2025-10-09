@@ -19,42 +19,46 @@ public class Server
     private readonly INetworkBridge _bridge;
     private readonly World _world;
 
-    /// <summary>
-    /// Initializes a new Server instance with the specified network bridge.
-    /// Creates a test world with a single chunk filled with demo data.
-    /// </summary>
-    /// <param name="bridge">The network bridge to use for communication with clients.</param>
-    public Server(INetworkBridge bridge)
+    // /// Initializes a new Server instance with the specified network bridge.
+    // Creates a 16x16 chunk world with generated terrain, or loads from disk if available.
+    public Server(INetworkBridge bridge, int seed = 12345)
     {
         _bridge = bridge;
         
         // Initialize default blocks
         DefaultBlocks.Initialize();
         
-        // Create a simple world with one chunk
-        _world = new World(1, 1, 1);
-        var chunk = new Chunk(Vector2.Zero);
+        // Try to load world from disk first
+        var serializer = new WorldSerializer();
+        _world = serializer.Load(seed);
         
-        // Fill chunk with some test data
-        for(int x = 0; x < 16; x++)
+        if (_world != null)
         {
-            for(int z = 0; z < 16; z++)
+            Console.WriteLine($"Loaded existing world for seed {seed}");
+        }
+        else
+        {
+            Console.WriteLine($"Generating new 16x16 chunk world with seed {seed}...");
+            
+            // Create a 16x16 chunk world
+            _world = new World(16, 1, 16);
+            var generator = new WorldGenerator(seed);
+            
+            // Generate all chunks
+            for (int x = 0; x < 16; x++)
             {
-                for (int y = 0; y < 256; y++)
+                for (int z = 0; z < 16; z++)
                 {
-                    if (y % 16 == 0)
-                    {
-                        chunk.SetBlockStateId(x, y, z, 1); // Stone
-                    }
-                    else
-                    {
-                        chunk.SetBlockStateId(x, y, z, 0); // Air
-                    }
+                    var chunk = generator.GenerateChunk(x, z);
+                    _world.SetChunk(x, 0, z, chunk);
                 }
             }
+            
+            Console.WriteLine("World generation complete!");
+            
+            // Save the generated world
+            serializer.Save(_world, seed);
         }
-        
-        _world.SetChunk(0, 0, 0, chunk);
         
         // Register packet handlers
         bridge.RegisterHandler<CheckPacket>(packet =>
@@ -75,28 +79,29 @@ public class Server
         });
     }
 
-    /// <summary>
-    /// Handles a chunk request from a client by sending the requested chunk if it exists.
-    /// </summary>
-    /// <param name="packet">The chunk request packet from the client.</param>
+    // /// Handles a chunk request from a client by sending the requested chunk if it exists.
     private void HandleChunkRequest(ChunkRequestPacket packet)
     {
-        // For now, just send the single chunk we have if it matches
-        if (packet.ChunkX == 0 && packet.ChunkZ == 0)
+        int chunkX = (int)packet.ChunkX;
+        int chunkZ = (int)packet.ChunkZ;
+        
+        // Check if chunk is within world bounds
+        if (chunkX >= 0 && chunkX < 16 && chunkZ >= 0 && chunkZ < 16)
         {
-            var chunk = _world.GetChunk(0, 0, 0);
+            var chunk = _world.GetChunk(chunkX, 0, chunkZ);
             if (chunk != null)
             {
                 _bridge.Send(new ChunkPacket(chunk));
-                Console.WriteLine("Sent chunk to client");
+                Console.WriteLine($"Sent chunk ({chunkX}, {chunkZ}) to client");
             }
+        }
+        else
+        {
+            Console.WriteLine($"Chunk ({chunkX}, {chunkZ}) is out of bounds");
         }
     }
 
-    /// <summary>
-    /// Handles a block update from a client by updating the block in the server's world.
-    /// </summary>
-    /// <param name="packet">The block update packet from the client.</param>
+    // /// Handles a block update from a client by updating the block in the server's world.
     private void HandleBlockUpdate(UpdateBlockPacket packet)
     {
         try
@@ -122,14 +127,16 @@ public class Server
         }
     }
 
-    /// <summary>
-    /// Runs the server main loop asynchronously.
-    /// Sends initial world state to clients and processes packets continuously.
-    /// </summary>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    // /// Runs the server main loop asynchronously.
+    // Sends initial world state to clients and processes packets continuously.
     public async Task RunAsync()
     {
         Console.WriteLine("Server started. Waiting for packets...");
+        
+        // Send BlockState registry first
+        var registryMappings = BlockStateRegistry.ExportMappings();
+        _bridge.Send(new BlockStateRegistryPacket(registryMappings));
+        Console.WriteLine($"Sent BlockState registry ({registryMappings.Count} states)");
         
         // Send initial world sync - send all chunks to client
         foreach (var chunk in _world.GetAllChunks())
@@ -149,28 +156,13 @@ public class Server
         }
     }
 
-    /// <summary>
-    /// Main entry point for the server application.
-    /// Listens on localhost:25565 and accepts a single client connection.
-    /// </summary>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    // /// Main entry point for the server application.
+    // Listens on port 25565 and accepts multiple client connections.
     public static async Task Main()
     {
-        // Setup TCP listener
-        var listener = new TcpListener(IPAddress.Loopback, 25565);
-        listener.Start();
-        Console.WriteLine("VoxelForge server listening on 25565...");
-
-        var client = await listener.AcceptTcpClientAsync();
-        Console.WriteLine("Client connected.");
-
-        // Create bridge over network stream
-        NetworkStream stream = client.GetStream();
-
-        INetworkBridge bridgeNet = new NetworkBridgeNet(stream, PacketRegistry.Factories);
+        Console.WriteLine("VoxelForge multi-client server starting...");
         
-        // Create and run server
-        var server = new Server(bridgeNet);
-        await server.RunAsync();
+        var multiServer = new MultiClientServer(12345); // Fixed seed
+        await multiServer.StartAsync(25565);
     }
 }
