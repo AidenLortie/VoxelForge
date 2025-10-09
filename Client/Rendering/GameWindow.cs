@@ -16,11 +16,16 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
     private Camera? _camera;
     private ShaderProgram? _chunkShader;
     private ChunkRenderer? _chunkRenderer;
+    private EntityRenderer? _entityRenderer;
+    private Models.ModelManager? _modelManager;
     private Texture? _blockTexture;
     private Player.PlayerController? _player;
     private Vector2 _lastMousePos;
     private bool _firstMove = true;
     private bool _showLoadingScreen = true;
+    
+    public ChunkRenderer? ChunkRenderer => _chunkRenderer;
+    public EntityRenderer? EntityRenderer => _entityRenderer;
     
     // /// Initializes a new GameWindow with the specified client.
     public GameWindow(VoxelForge.Client.Client client) 
@@ -87,6 +92,11 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         
         // Initialize chunk renderer
         _chunkRenderer = new ChunkRenderer(_chunkShader, _blockTexture);
+        
+        // Initialize model manager and entity renderer
+        _modelManager = new Models.ModelManager();
+        _entityRenderer = new EntityRenderer(_modelManager);
+        _entityRenderer.Initialize();
         
         // Capture mouse for camera control
         CursorState = CursorState.Grabbed;
@@ -174,6 +184,12 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         // Sync camera position to player (at eye level)
         _camera.Position = _player.Position + new Vector3(0, 1.6f, 0);
         
+        // Update entity renderer interpolation
+        if (_entityRenderer != null)
+        {
+            _entityRenderer.Update(deltaTime);
+        }
+        
         // Poll network for incoming packets
         _client.Poll();
     }
@@ -228,6 +244,12 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
                 var view = _camera.GetViewMatrix();
                 var projection = _camera.GetProjectionMatrix();
                 _chunkRenderer.Render(view, projection);
+                
+                // Render entities
+                if (_entityRenderer != null)
+                {
+                    _entityRenderer.Render(view, projection);
+                }
             }
         }
         
@@ -252,9 +274,6 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         Console.WriteLine($"Window resized to {e.Width}x{e.Height}");
     }
     
-    // /// Provides access to the chunk renderer for updating chunks from the client.
-    public ChunkRenderer? ChunkRenderer => _chunkRenderer;
-    
     // /// Called when the window is closing. Clean up resources here.
     protected override void OnUnload()
     {
@@ -266,5 +285,6 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         _chunkRenderer?.Dispose();
         _chunkShader?.Dispose();
         _blockTexture?.Dispose();
+        _entityRenderer?.Dispose();
     }
 }

@@ -64,30 +64,46 @@ public class Client
         Console.WriteLine($"Requested {_chunksRequested} chunks");
     }
 
-    // Main entry point - starts client with local server or connects to network server
+    // Main entry point - shows menu then starts client in selected mode
     public static void Main(string[] args)
     {
-        // Check if rendering mode is enabled
-        bool useRendering = args.Contains("--rendering");
+        // Check for command line override
+        bool forceRendering = args.Contains("--rendering");
+        bool forceConsole = args.Contains("--console");
         
-        if (useRendering)
+        if (forceRendering)
         {
-            Console.WriteLine("Starting VoxelForge client with rendering enabled...");
-            Console.WriteLine("Using local server by default. Press 'L' in-game to host network server.");
-            RunWithRendering();
+            Console.WriteLine("Starting in single player mode (command line override)...");
+            RunSinglePlayer();
+        }
+        else if (forceConsole)
+        {
+            Console.WriteLine("Starting in multiplayer mode (command line override)...");
+            RunMultiplayer();
         }
         else
         {
-            Console.WriteLine("Starting VoxelForge client in console mode...");
-            Console.WriteLine("Use --rendering flag to enable OpenTK window");
-            RunConsoleMode();
+            // Show menu and let user choose
+            using var menu = new UI.MenuWindow();
+            menu.Run();
+            
+            if (menu.ShouldStartSinglePlayer)
+            {
+                RunSinglePlayer();
+            }
+            else if (menu.ShouldStartMultiplayer)
+            {
+                RunMultiplayer();
+            }
+            else
+            {
+                Console.WriteLine("Exiting...");
+            }
         }
     }
     
-    /// <summary>
-    /// Runs the client with OpenTK rendering window and local server.
-    /// </summary>
-    private static void RunWithRendering()
+    // Run in single player mode with local server
+    private static void RunSinglePlayer()
     {
         // Create local bridges for client and server
         var clientBridge = new NetworkBridgeLocal();
@@ -122,10 +138,8 @@ public class Client
         Console.WriteLine("Window closed");
     }
     
-    /// <summary>
-    /// Runs the client in console-only mode connecting to network server.
-    /// </summary>
-    private static void RunConsoleMode()
+    // Run in multiplayer mode connecting to network server
+    private static void RunMultiplayer()
     {
         // Connect to server
         var clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
