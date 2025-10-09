@@ -68,7 +68,7 @@ uniform vec3 textColor;
 void main()
 {
     float alpha = texture(text, TexCoord).r;
-    FragColor = vec4(alpha, alpha, alpha, alpha);
+    FragColor = vec4(textColor, alpha);
 }";
 
             _shader = new ShaderProgram(vertShader, fragShader);
