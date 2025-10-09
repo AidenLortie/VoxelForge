@@ -153,16 +153,21 @@ public class Client
         // Start listening for incoming packets
         client.StartListening();
 
-        // Request chunks around spawn
-        client.RequestChunksAround(8, 8, 2); // Request 2 chunks in each direction for console mode
+        // Request chunks around spawn (same as single player)
+        client.RequestChunksAround(8, 8, 4); // Request 4 chunks in each direction
         
-        // Main loop
-        while (true)
+        // Create and run the rendering window (same as single player)
+        using var window = new Rendering.GameWindow(client);
+        
+        // Set up chunk update handler
+        client.SetChunkUpdateHandler(chunk =>
         {
-            client.Poll();
-            client.SendPacket(new CheckPacket());
-            Task.Delay(100).Wait();
-        }
+            window.ChunkRenderer?.UpdateChunk(chunk);
+        });
+        
+        window.Run();
+        
+        Console.WriteLine("Window closed");
     }
 
     // Send packet to server
