@@ -82,7 +82,7 @@ public class Client
 
     /// <summary>
     /// Main entry point for the client application.
-    /// Connects to the server on localhost:25565 and enters the main game loop.
+    /// By default, starts with local server. Use --rendering to enable OpenTK window.
     /// </summary>
     /// <param name="args">Command line arguments. Use --rendering to enable OpenTK window.</param>
     public static void Main(string[] args)
@@ -93,6 +93,7 @@ public class Client
         if (useRendering)
         {
             Console.WriteLine("Starting VoxelForge client with rendering enabled...");
+            Console.WriteLine("Using local server by default. Press 'L' in-game to host network server.");
             RunWithRendering();
         }
         else
@@ -104,29 +105,22 @@ public class Client
     }
     
     /// <summary>
-    /// Runs the client with OpenTK rendering window.
+    /// Runs the client with OpenTK rendering window and local server.
     /// </summary>
     private static void RunWithRendering()
     {
-        // Connect to server
-        var clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        // Create local bridges for client and server
+        var clientBridge = new NetworkBridgeLocal();
+        var serverBridge = new NetworkBridgeLocal();
+        clientBridge.ConnectTo(serverBridge);
         
-        try
-        {
-            clientSocket.Connect(IPAddress.Loopback, 25565);
-            Console.WriteLine("Connected to server at localhost:25565");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to connect to server: {ex.Message}");
-            Console.WriteLine("Make sure the server is running on localhost:25565");
-            return;
-        }
+        // Start local server in background
+        var server = new VoxelForge.Server.Server(serverBridge);
+        Task.Run(async () => await server.RunAsync());
+        
+        Console.WriteLine("Local server started");
 
-        var stream = new NetworkStream(clientSocket);
-        var bridgeNet = new NetworkBridgeNet(stream, PacketRegistry.Factories);
-
-        var client = new Client(bridgeNet);
+        var client = new Client(clientBridge);
 
         // Start listening for incoming packets
         client.StartListening();
@@ -149,7 +143,7 @@ public class Client
     }
     
     /// <summary>
-    /// Runs the client in console-only mode (original behavior).
+    /// Runs the client in console-only mode connecting to network server.
     /// </summary>
     private static void RunConsoleMode()
     {

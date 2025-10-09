@@ -171,26 +171,14 @@ public class Server
 
     /// <summary>
     /// Main entry point for the server application.
-    /// Listens on localhost:25565 and accepts a single client connection.
+    /// Listens on port 25565 and accepts multiple client connections.
     /// </summary>
     /// <returns>A task representing the asynchronous operation.</returns>
     public static async Task Main()
     {
-        // Setup TCP listener
-        var listener = new TcpListener(IPAddress.Loopback, 25565);
-        listener.Start();
-        Console.WriteLine("VoxelForge server listening on 25565...");
-
-        var client = await listener.AcceptTcpClientAsync();
-        Console.WriteLine("Client connected.");
-
-        // Create bridge over network stream
-        NetworkStream stream = client.GetStream();
-
-        INetworkBridge bridgeNet = new NetworkBridgeNet(stream, PacketRegistry.Factories);
+        Console.WriteLine("VoxelForge multi-client server starting...");
         
-        // Create and run server
-        var server = new Server(bridgeNet);
-        await server.RunAsync();
+        var multiServer = new MultiClientServer(12345); // Fixed seed
+        await multiServer.StartAsync(25565);
     }
 }
