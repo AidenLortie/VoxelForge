@@ -98,6 +98,26 @@ public class Chunk
     }
 
     /// <summary>
+    /// Gets the block state ID at the specified local coordinates within this chunk.
+    /// </summary>
+    /// <param name="x">Local X coordinate (0-15).</param>
+    /// <param name="y">Local Y coordinate (0-255).</param>
+    /// <param name="z">Local Z coordinate (0-15).</param>
+    /// <returns>The numeric ID of the block state at the specified coordinates.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when Y is not between 0 and 255.</exception>
+    public ushort GetBlockStateId(int x, int y, int z)
+    {
+        if (y < 0 || y >= 256)
+            throw new ArgumentOutOfRangeException("Y coordinate must be between 0 and 255.");
+        
+        int subChunkIndex = y / 16;
+        int localY = y % 16;
+        int localX = x % 16;
+        int localZ = z % 16;
+        return SubChunks[subChunkIndex].GetBlockStateId(localX, localY, localZ);
+    }
+
+    /// <summary>
     /// Gets the SubChunk containing the specified coordinates.
     /// </summary>
     /// <param name="x">X coordinate.</param>

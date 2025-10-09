@@ -17,6 +17,7 @@ public class Client
 {
     private readonly INetworkBridge _bridge;
     private readonly World _world;
+    private Action<Chunk>? _chunkUpdateHandler;
 
     /// <summary>
     /// Initializes a new Client instance with the specified network bridge.
@@ -31,6 +32,15 @@ public class Client
         
         // Create a local world
         _world = new World(1, 1, 1);
+    }
+    
+    /// <summary>
+    /// Sets a handler that will be called when a chunk is received or updated.
+    /// </summary>
+    /// <param name="handler">The handler to call with the chunk</param>
+    public void SetChunkUpdateHandler(Action<Chunk> handler)
+    {
+        _chunkUpdateHandler = handler;
     }
 
     /// <summary>
@@ -89,6 +99,13 @@ public class Client
         
         // Create and run the rendering window
         using var window = new Rendering.GameWindow(client);
+        
+        // Set up chunk update handler
+        client.SetChunkUpdateHandler(chunk =>
+        {
+            window.ChunkRenderer?.UpdateChunk(chunk);
+        });
+        
         window.Run();
         
         Console.WriteLine("Window closed");
@@ -157,6 +174,9 @@ public class Client
             var chunkPos = packet.Chunk.GetChunkPosition();
             _world.SetChunk((int)chunkPos.X, 0, (int)chunkPos.Y, packet.Chunk);
             Console.WriteLine("Stored chunk in local world");
+            
+            // Notify handler if set
+            _chunkUpdateHandler?.Invoke(packet.Chunk);
         });
         
         _bridge.RegisterHandler<ChunkRequestPacket>(_ => { Console.WriteLine("Received chunk request from server."); });

@@ -2,6 +2,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using OpenTK.Mathematics;
 
 namespace VoxelForge.Client.Rendering;
 
@@ -12,6 +13,11 @@ namespace VoxelForge.Client.Rendering;
 public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
 {
     private readonly VoxelForge.Client.Client _client;
+    private Camera? _camera;
+    private ShaderProgram? _chunkShader;
+    private ChunkRenderer? _chunkRenderer;
+    private Vector2 _lastMousePos;
+    private bool _firstMove = true;
     
     /// <summary>
     /// Initializes a new GameWindow with the specified client.
@@ -67,6 +73,21 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         GL.Enable(EnableCap.DepthTest); // Enable depth testing for 3D
         GL.Enable(EnableCap.CullFace); // Enable face culling for performance
         GL.CullFace(TriangleFace.Back); // Cull back faces
+        
+        // Initialize camera
+        _camera = new Camera(new Vector3(0, 10, 20));
+        _camera.AspectRatio = (float)Size.X / Size.Y;
+        
+        // Load shaders
+        string vertexSource = File.ReadAllText("Rendering/Shaders/chunk.vert");
+        string fragmentSource = File.ReadAllText("Rendering/Shaders/chunk.frag");
+        _chunkShader = new ShaderProgram(vertexSource, fragmentSource);
+        
+        // Initialize chunk renderer
+        _chunkRenderer = new ChunkRenderer(_chunkShader);
+        
+        // Capture mouse for camera control
+        CursorState = CursorState.Grabbed;
     }
     
     /// <summary>
@@ -77,6 +98,9 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
     {
         base.OnUpdateFrame(args);
         
+        if (_camera == null)
+            return;
+        
         // Handle input
         var keyboardState = KeyboardState;
         if (keyboardState.IsKeyDown(Keys.Escape))
@@ -84,8 +108,50 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
             Close(); // Close window when Escape is pressed
         }
         
+        float speed = _camera.MovementSpeed * (float)args.Time;
+        
+        // WASD movement
+        if (keyboardState.IsKeyDown(Keys.W))
+            _camera.MoveForward(speed);
+        if (keyboardState.IsKeyDown(Keys.S))
+            _camera.MoveForward(-speed);
+        if (keyboardState.IsKeyDown(Keys.A))
+            _camera.MoveRight(-speed);
+        if (keyboardState.IsKeyDown(Keys.D))
+            _camera.MoveRight(speed);
+        
+        // Space/Shift for up/down
+        if (keyboardState.IsKeyDown(Keys.Space))
+            _camera.MoveUp(speed);
+        if (keyboardState.IsKeyDown(Keys.LeftShift))
+            _camera.MoveUp(-speed);
+        
         // Poll network for incoming packets
         _client.Poll();
+    }
+    
+    /// <summary>
+    /// Called when mouse moves. Updates camera rotation.
+    /// </summary>
+    protected override void OnMouseMove(MouseMoveEventArgs e)
+    {
+        base.OnMouseMove(e);
+        
+        if (_camera == null)
+            return;
+        
+        if (_firstMove)
+        {
+            _lastMousePos = new Vector2(e.X, e.Y);
+            _firstMove = false;
+            return;
+        }
+        
+        float deltaX = e.X - _lastMousePos.X;
+        float deltaY = e.Y - _lastMousePos.Y;
+        _lastMousePos = new Vector2(e.X, e.Y);
+        
+        _camera.Rotate(deltaX, deltaY);
     }
     
     /// <summary>
@@ -99,7 +165,13 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         // Clear the screen and depth buffer
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         
-        // TODO: Render world and entities here (Phase 2+)
+        // Render chunks if camera and renderer are initialized
+        if (_camera != null && _chunkRenderer != null)
+        {
+            var view = _camera.GetViewMatrix();
+            var projection = _camera.GetProjectionMatrix();
+            _chunkRenderer.Render(view, projection);
+        }
         
         // Swap front and back buffers to display rendered frame
         SwapBuffers();
@@ -116,8 +188,19 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         // Update the OpenGL viewport to match the new window size
         GL.Viewport(0, 0, e.Width, e.Height);
         
+        // Update camera aspect ratio
+        if (_camera != null)
+        {
+            _camera.AspectRatio = (float)e.Width / e.Height;
+        }
+        
         Console.WriteLine($"Window resized to {e.Width}x{e.Height}");
     }
+    
+    /// <summary>
+    /// Provides access to the chunk renderer for updating chunks from the client.
+    /// </summary>
+    public ChunkRenderer? ChunkRenderer => _chunkRenderer;
     
     /// <summary>
     /// Called when the window is closing. Clean up resources here.
@@ -128,6 +211,8 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         
         Console.WriteLine("GameWindow unloading");
         
-        // TODO: Clean up rendering resources here (shaders, buffers, textures)
+        // Clean up rendering resources
+        _chunkRenderer?.Dispose();
+        _chunkShader?.Dispose();
     }
 }
