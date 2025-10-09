@@ -73,6 +73,8 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         GL.Enable(EnableCap.DepthTest); // Enable depth testing for 3D
         GL.Enable(EnableCap.CullFace); // Enable face culling for performance
         GL.CullFace(TriangleFace.Back); // Cull back faces
+        // set winding direction to counter-clockwise
+        GL.FrontFace(FrontFaceDirection.Cw);
         
         // Initialize camera
         _camera = new Camera(new Vector3(0, 10, 20));
