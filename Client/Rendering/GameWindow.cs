@@ -22,19 +22,14 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
     private bool _firstMove = true;
     private bool _showLoadingScreen = true;
     
-    /// <summary>
-    /// Initializes a new GameWindow with the specified client.
-    /// </summary>
-    /// <param name="client">The game client instance.</param>
+    // /// Initializes a new GameWindow with the specified client.
     public GameWindow(VoxelForge.Client.Client client) 
         : base(CreateGameWindowSettings(), CreateNativeWindowSettings())
     {
         _client = client;
     }
     
-    /// <summary>
-    /// Creates the game window settings for OpenTK.
-    /// </summary>
+    // /// Creates the game window settings for OpenTK.
     private static GameWindowSettings CreateGameWindowSettings()
     {
         return new GameWindowSettings
@@ -43,9 +38,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         };
     }
     
-    /// <summary>
-    /// Creates the native window settings for OpenTK.
-    /// </summary>
+    // /// Creates the native window settings for OpenTK.
     private static NativeWindowSettings CreateNativeWindowSettings()
     {
         return new NativeWindowSettings
@@ -59,9 +52,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         };
     }
     
-    /// <summary>
-    /// Called when the window is loaded. Initialize OpenGL state here.
-    /// </summary>
+    // /// Called when the window is loaded. Initialize OpenGL state here.
     protected override void OnLoad()
     {
         base.OnLoad();
@@ -101,10 +92,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         CursorState = CursorState.Grabbed;
     }
     
-    /// <summary>
-    /// Called every frame to update game logic.
-    /// </summary>
-    /// <param name="args">Frame event arguments containing delta time.</param>
+    // /// Called every frame to update game logic.
     protected override void OnUpdateFrame(FrameEventArgs args)
     {
         base.OnUpdateFrame(args);
@@ -190,9 +178,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         _client.Poll();
     }
     
-    /// <summary>
-    /// Called when mouse moves. Updates camera rotation.
-    /// </summary>
+    // /// Called when mouse moves. Updates camera rotation.
     protected override void OnMouseMove(MouseMoveEventArgs e)
     {
         base.OnMouseMove(e);
@@ -214,10 +200,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         _camera.Rotate(deltaX, deltaY);
     }
     
-    /// <summary>
-    /// Called every frame to render the scene.
-    /// </summary>
-    /// <param name="args">Frame event arguments containing delta time.</param>
+    // /// Called every frame to render the scene.
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         base.OnRenderFrame(args);
@@ -252,10 +235,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         SwapBuffers();
     }
     
-    /// <summary>
-    /// Called when the window is resized.
-    /// </summary>
-    /// <param name="e">Resize event arguments.</param>
+    // /// Called when the window is resized.
     protected override void OnResize(ResizeEventArgs e)
     {
         base.OnResize(e);
@@ -272,14 +252,10 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         Console.WriteLine($"Window resized to {e.Width}x{e.Height}");
     }
     
-    /// <summary>
-    /// Provides access to the chunk renderer for updating chunks from the client.
-    /// </summary>
+    // /// Provides access to the chunk renderer for updating chunks from the client.
     public ChunkRenderer? ChunkRenderer => _chunkRenderer;
     
-    /// <summary>
-    /// Called when the window is closing. Clean up resources here.
-    /// </summary>
+    // /// Called when the window is closing. Clean up resources here.
     protected override void OnUnload()
     {
         base.OnUnload();

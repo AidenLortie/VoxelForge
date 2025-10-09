@@ -7,39 +7,25 @@ namespace VoxelForge.Shared.Entities;
 /// </summary>
 public abstract class Entity
 {
-    /// <summary>
-    /// Unique identifier for this entity.
-    /// </summary>
+    // /// Unique identifier for this entity.
     public int EntityId { get; set; }
     
-    /// <summary>
-    /// Position of the entity in world space.
-    /// </summary>
+    // /// Position of the entity in world space.
     public Vector3 Position { get; set; }
     
-    /// <summary>
-    /// Rotation of the entity (pitch, yaw, roll) in radians.
-    /// </summary>
+    // /// Rotation of the entity (pitch, yaw, roll) in radians.
     public Vector3 Rotation { get; set; }
     
-    /// <summary>
-    /// Velocity of the entity in blocks per second.
-    /// </summary>
+    // /// Velocity of the entity in blocks per second.
     public Vector3 Velocity { get; set; }
     
-    /// <summary>
-    /// Type identifier for this entity (e.g., "player", "zombie", "item_drop")
-    /// </summary>
+    // /// Type identifier for this entity (e.g., "player", "zombie", "item_drop")
     public abstract string EntityType { get; }
     
-    /// <summary>
-    /// Whether this entity is on the ground.
-    /// </summary>
+    // /// Whether this entity is on the ground.
     public bool OnGround { get; set; }
     
-    /// <summary>
-    /// Age of the entity in ticks (for animations, despawn timers, etc.)
-    /// </summary>
+    // /// Age of the entity in ticks (for animations, despawn timers, etc.)
     public int Age { get; set; }
     
     protected Entity()
@@ -51,10 +37,7 @@ public abstract class Entity
         Age = 0;
     }
     
-    /// <summary>
-    /// Updates the entity. Called once per game tick.
-    /// </summary>
-    /// <param name="deltaTime">Time since last update in seconds</param>
+    // /// Updates the entity. Called once per game tick.
     public virtual void Update(float deltaTime)
     {
         Age++;
@@ -63,21 +46,15 @@ public abstract class Entity
         Position += Velocity * deltaTime;
     }
     
-    /// <summary>
-    /// Serializes entity-specific data for network transmission.
-    /// Override this to add custom entity data.
-    /// </summary>
-    /// <returns>Dictionary of key-value pairs representing entity data</returns>
+    // /// Serializes entity-specific data for network transmission.
+    // Override this to add custom entity data.
     public virtual Dictionary<string, object> SerializeData()
     {
         return new Dictionary<string, object>();
     }
     
-    /// <summary>
-    /// Deserializes entity-specific data from network transmission.
-    /// Override this to read custom entity data.
-    /// </summary>
-    /// <param name="data">Dictionary of key-value pairs representing entity data</param>
+    // /// Deserializes entity-specific data from network transmission.
+    // Override this to read custom entity data.
     public virtual void DeserializeData(Dictionary<string, object> data)
     {
         // Override in subclasses

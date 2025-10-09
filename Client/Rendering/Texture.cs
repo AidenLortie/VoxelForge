@@ -11,25 +11,16 @@ public class Texture : IDisposable
     private int _handle;
     private bool _disposed = false;
     
-    /// <summary>
-    /// Gets the OpenGL texture handle.
-    /// </summary>
+    // /// Gets the OpenGL texture handle.
     public int Handle => _handle;
     
-    /// <summary>
-    /// Gets the width of the texture in pixels.
-    /// </summary>
+    // /// Gets the width of the texture in pixels.
     public int Width { get; private set; }
     
-    /// <summary>
-    /// Gets the height of the texture in pixels.
-    /// </summary>
+    // /// Gets the height of the texture in pixels.
     public int Height { get; private set; }
     
-    /// <summary>
-    /// Loads a texture from a file.
-    /// </summary>
-    /// <param name="path">Path to the image file</param>
+    // /// Loads a texture from a file.
     public Texture(string path)
     {
         // Generate texture
@@ -69,28 +60,21 @@ public class Texture : IDisposable
         Console.WriteLine($"Texture loaded: {path} ({Width}x{Height})");
     }
     
-    /// <summary>
-    /// Binds this texture to the specified texture unit.
-    /// </summary>
-    /// <param name="unit">Texture unit to bind to (0-31)</param>
+    // /// Binds this texture to the specified texture unit.
     public void Bind(int unit = 0)
     {
         GL.ActiveTexture((TextureUnit)((int)TextureUnit.Texture0 + unit));
         GL.BindTexture(TextureTarget.Texture2d, _handle);
     }
     
-    /// <summary>
-    /// Unbinds any texture from the specified unit.
-    /// </summary>
+    // /// Unbinds any texture from the specified unit.
     public static void Unbind(int unit = 0)
     {
         GL.ActiveTexture((TextureUnit)((int)TextureUnit.Texture0 + unit));
         GL.BindTexture(TextureTarget.Texture2d, 0);
     }
     
-    /// <summary>
-    /// Disposes the texture and frees GPU resources.
-    /// </summary>
+    // /// Disposes the texture and frees GPU resources.
     public void Dispose()
     {
         if (!_disposed)

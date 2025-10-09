@@ -33,10 +33,7 @@ public class MultiClientServer
         }
     }
     
-    /// <summary>
-    /// Creates a multi-client server with an embedded Server instance.
-    /// </summary>
-    /// <param name="seed">World generation seed</param>
+    // /// Creates a multi-client server with an embedded Server instance.
     public MultiClientServer(int seed = 12345)
     {
         // Create a broadcast bridge that sends to all clients
@@ -44,10 +41,7 @@ public class MultiClientServer
         _server = new Server(broadcastBridge, seed);
     }
     
-    /// <summary>
-    /// Starts listening for client connections on the specified port.
-    /// </summary>
-    /// <param name="port">Port to listen on (default 25565)</param>
+    // /// Starts listening for client connections on the specified port.
     public async Task StartAsync(int port = 25565)
     {
         _listener = new TcpListener(IPAddress.Any, port);
@@ -63,9 +57,7 @@ public class MultiClientServer
         await _server.RunAsync();
     }
     
-    /// <summary>
-    /// Accepts incoming client connections.
-    /// </summary>
+    // /// Accepts incoming client connections.
     private async Task AcceptClientsAsync()
     {
         while (_isRunning && _listener != null)
@@ -96,9 +88,7 @@ public class MultiClientServer
         }
     }
     
-    /// <summary>
-    /// Handles communication with a specific client.
-    /// </summary>
+    // /// Handles communication with a specific client.
     private async Task HandleClient(ClientConnection connection)
     {
         try
@@ -129,9 +119,7 @@ public class MultiClientServer
         }
     }
     
-    /// <summary>
-    /// Broadcasts a packet to all connected clients.
-    /// </summary>
+    // /// Broadcasts a packet to all connected clients.
     public void BroadcastPacket(Packet packet)
     {
         foreach (var client in _clients.Values)
@@ -147,9 +135,7 @@ public class MultiClientServer
         }
     }
     
-    /// <summary>
-    /// Stops the server and disconnects all clients.
-    /// </summary>
+    // /// Stops the server and disconnects all clients.
     public void Stop()
     {
         _isRunning = false;
@@ -164,9 +150,7 @@ public class MultiClientServer
         Console.WriteLine("Server stopped");
     }
     
-    /// <summary>
-    /// Network bridge that broadcasts packets to all connected clients.
-    /// </summary>
+    // /// Network bridge that broadcasts packets to all connected clients.
     private class BroadcastNetworkBridge : INetworkBridge
     {
         private readonly MultiClientServer _server;

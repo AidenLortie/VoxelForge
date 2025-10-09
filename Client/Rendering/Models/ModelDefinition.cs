@@ -8,40 +8,27 @@ namespace VoxelForge.Client.Rendering.Models;
 /// </summary>
 public class ModelDefinition
 {
-    /// <summary>
-    /// Name/ID of the model
-    /// </summary>
+    // /// Name/ID of the model
     [JsonPropertyName("name")]
     public string Name { get; set; } = "";
     
-    /// <summary>
-    /// Vertex positions as flat array [x, y, z, x, y, z, ...]
-    /// </summary>
+    // /// Vertex positions as flat array [x, y, z, x, y, z, ...]
     [JsonPropertyName("positions")]
     public float[] Positions { get; set; } = Array.Empty<float>();
     
-    /// <summary>
-    /// Vertex normals as flat array [x, y, z, x, y, z, ...]
-    /// </summary>
+    // /// Vertex normals as flat array [x, y, z, x, y, z, ...]
     [JsonPropertyName("normals")]
     public float[] Normals { get; set; } = Array.Empty<float>();
     
-    /// <summary>
-    /// Texture coordinates as flat array [u, v, u, v, ...]
-    /// </summary>
+    // /// Texture coordinates as flat array [u, v, u, v, ...]
     [JsonPropertyName("texCoords")]
     public float[] TexCoords { get; set; } = Array.Empty<float>();
     
-    /// <summary>
-    /// Indices for indexed drawing
-    /// </summary>
+    // /// Indices for indexed drawing
     [JsonPropertyName("indices")]
     public uint[] Indices { get; set; } = Array.Empty<uint>();
     
-    /// <summary>
-    /// Converts this model definition to an array of interleaved vertices.
-    /// </summary>
-    /// <returns>Array of Vertex structures with interleaved data.</returns>
+    // /// Converts this model definition to an array of interleaved vertices.
     public Vertex[] ToVertices()
     {
         int vertexCount = Positions.Length / 3;

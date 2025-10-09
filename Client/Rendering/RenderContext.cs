@@ -13,9 +13,7 @@ public class RenderContext
     private bool _depthTestEnabled;
     private bool _cullFaceEnabled;
     
-    /// <summary>
-    /// Initializes a new RenderContext with default settings.
-    /// </summary>
+    // /// Initializes a new RenderContext with default settings.
     public RenderContext()
     {
         _clearColor = new Vector4(0.1f, 0.1f, 0.1f, 1.0f);
@@ -23,9 +21,7 @@ public class RenderContext
         _cullFaceEnabled = true;
     }
     
-    /// <summary>
-    /// Gets or sets the clear color used when clearing the screen.
-    /// </summary>
+    // /// Gets or sets the clear color used when clearing the screen.
     public Vector4 ClearColor
     {
         get => _clearColor;
@@ -36,9 +32,7 @@ public class RenderContext
         }
     }
     
-    /// <summary>
-    /// Gets or sets whether depth testing is enabled.
-    /// </summary>
+    // /// Gets or sets whether depth testing is enabled.
     public bool DepthTestEnabled
     {
         get => _depthTestEnabled;
@@ -52,9 +46,7 @@ public class RenderContext
         }
     }
     
-    /// <summary>
-    /// Gets or sets whether face culling is enabled.
-    /// </summary>
+    // /// Gets or sets whether face culling is enabled.
     public bool CullFaceEnabled
     {
         get => _cullFaceEnabled;
@@ -68,22 +60,13 @@ public class RenderContext
         }
     }
     
-    /// <summary>
-    /// Sets the viewport dimensions.
-    /// </summary>
-    /// <param name="x">The lower-left x coordinate.</param>
-    /// <param name="y">The lower-left y coordinate.</param>
-    /// <param name="width">The viewport width.</param>
-    /// <param name="height">The viewport height.</param>
+    // /// Sets the viewport dimensions.
     public void SetViewport(int x, int y, int width, int height)
     {
         GL.Viewport(x, y, width, height);
     }
     
-    /// <summary>
-    /// Clears the screen with the current clear color.
-    /// </summary>
-    /// <param name="clearDepth">Whether to also clear the depth buffer.</param>
+    // /// Clears the screen with the current clear color.
     public void Clear(bool clearDepth = true)
     {
         var mask = ClearBufferMask.ColorBufferBit;
@@ -93,9 +76,7 @@ public class RenderContext
         GL.Clear(mask);
     }
     
-    /// <summary>
-    /// Initializes the render context with default OpenGL state.
-    /// </summary>
+    // /// Initializes the render context with default OpenGL state.
     public void Initialize()
     {
         GL.ClearColor(_clearColor.X, _clearColor.Y, _clearColor.Z, _clearColor.W);

@@ -14,22 +14,13 @@ public class Model : IDisposable
     private int _indexCount;
     private bool _disposed = false;
     
-    /// <summary>
-    /// Name/ID of the model
-    /// </summary>
+    // /// Name/ID of the model
     public string Name { get; }
     
-    /// <summary>
-    /// Gets the number of indices to render
-    /// </summary>
+    // /// Gets the number of indices to render
     public int IndexCount => _indexCount;
     
-    /// <summary>
-    /// Creates a model from vertex and index data.
-    /// </summary>
-    /// <param name="name">Name/ID of the model</param>
-    /// <param name="vertices">Array of interleaved vertex data</param>
-    /// <param name="indices">Array of indices for indexed drawing</param>
+    // /// Creates a model from vertex and index data.
     public Model(string name, Vertex[] vertices, uint[] indices)
     {
         Name = name;
@@ -89,35 +80,27 @@ public class Model : IDisposable
         Console.WriteLine($"Model '{name}' created: {vertices.Length} vertices, {indices.Length} indices");
     }
     
-    /// <summary>
-    /// Creates a model from a JSON model definition.
-    /// </summary>
+    // /// Creates a model from a JSON model definition.
     public static Model FromDefinition(ModelDefinition definition)
     {
         var vertices = definition.ToVertices();
         return new Model(definition.Name, vertices, definition.Indices);
     }
     
-    /// <summary>
-    /// Binds this model's VAO for rendering.
-    /// </summary>
+    // /// Binds this model's VAO for rendering.
     public void Bind()
     {
         GL.BindVertexArray(_vao);
     }
     
-    /// <summary>
-    /// Renders this model using indexed drawing.
-    /// </summary>
+    // /// Renders this model using indexed drawing.
     public void Render()
     {
         GL.BindVertexArray(_vao);
         GL.DrawElements(PrimitiveType.Triangles, _indexCount, DrawElementsType.UnsignedInt, 0);
     }
     
-    /// <summary>
-    /// Disposes the model and frees GPU resources.
-    /// </summary>
+    // /// Disposes the model and frees GPU resources.
     public void Dispose()
     {
         if (!_disposed)

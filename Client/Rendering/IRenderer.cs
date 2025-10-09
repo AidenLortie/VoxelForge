@@ -5,19 +5,12 @@ namespace VoxelForge.Client.Rendering;
 /// </summary>
 public interface IRenderer
 {
-    /// <summary>
-    /// Initialize the renderer. Called once when the renderer is created.
-    /// </summary>
+    // /// Initialize the renderer. Called once when the renderer is created.
     void Initialize();
     
-    /// <summary>
-    /// Render a frame. Called every frame.
-    /// </summary>
-    /// <param name="deltaTime">Time since last frame in seconds.</param>
+    // /// Render a frame. Called every frame.
     void Render(double deltaTime);
     
-    /// <summary>
-    /// Clean up resources. Called when the renderer is disposed.
-    /// </summary>
+    // /// Clean up resources. Called when the renderer is disposed.
     void Dispose();
 }

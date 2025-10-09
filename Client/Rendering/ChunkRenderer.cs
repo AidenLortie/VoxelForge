@@ -23,19 +23,14 @@ public class ChunkRenderer : IDisposable
         { 3, new Vector3(0.6f, 0.4f, 0.2f) }, // Dirt (brown)
     };
     
-    /// <summary>
-    /// Creates a new ChunkRenderer with the specified shader and texture.
-    /// </summary>
+    // /// Creates a new ChunkRenderer with the specified shader and texture.
     public ChunkRenderer(ShaderProgram shader, Texture texture)
     {
         _shader = shader;
         _texture = texture;
     }
     
-    /// <summary>
-    /// Updates the mesh for a chunk. If the chunk already has a mesh, it will be replaced.
-    /// </summary>
-    /// <param name="chunk">The chunk to update</param>
+    // /// Updates the mesh for a chunk. If the chunk already has a mesh, it will be replaced.
     public void UpdateChunk(Chunk chunk)
     {
         var chunkPos = new Vector2i((int)chunk.GetChunkPosition().X, (int)chunk.GetChunkPosition().Y);
@@ -60,9 +55,7 @@ public class ChunkRenderer : IDisposable
         }
     }
     
-    /// <summary>
-    /// Removes a chunk's mesh from the renderer.
-    /// </summary>
+    // /// Removes a chunk's mesh from the renderer.
     public void RemoveChunk(Vector2i chunkPos)
     {
         if (_chunkMeshes.TryGetValue(chunkPos, out var mesh))
@@ -72,11 +65,7 @@ public class ChunkRenderer : IDisposable
         }
     }
     
-    /// <summary>
-    /// Renders all loaded chunks with the given view and projection matrices.
-    /// </summary>
-    /// <param name="view">View matrix (camera transform)</param>
-    /// <param name="projection">Projection matrix (perspective)</param>
+    // /// Renders all loaded chunks with the given view and projection matrices.
     public void Render(Matrix4 view, Matrix4 projection)
     {
         _shader.Use();
@@ -103,17 +92,13 @@ public class ChunkRenderer : IDisposable
         }
     }
     
-    /// <summary>
-    /// Gets the number of chunks currently loaded.
-    /// </summary>
+    // /// Gets the number of chunks currently loaded.
     public int GetChunkCount()
     {
         return _chunkMeshes.Count;
     }
     
-    /// <summary>
-    /// Disposes all chunk meshes and frees GPU resources.
-    /// </summary>
+    // /// Disposes all chunk meshes and frees GPU resources.
     public void Dispose()
     {
         if (!_disposed)

@@ -9,10 +9,7 @@ using VoxelForge.Shared.World;
 
 namespace VoxelForge.Client;
 
-/// <summary>
-/// Represents the VoxelForge game client.
-/// Handles connection to the server, receiving world data, and sending player actions.
-/// </summary>
+// Game client - handles connection to server, receives world data, sends player actions
 public class Client
 {
     private readonly INetworkBridge _bridge;
@@ -22,20 +19,9 @@ public class Client
     private int _chunksRequested = 0;
     private bool _initialLoadComplete = false;
     
-    /// <summary>
-    /// Gets the client's local world.
-    /// </summary>
     public World World => _world;
-    
-    /// <summary>
-    /// Gets whether the initial chunk loading is complete.
-    /// </summary>
     public bool IsInitialLoadComplete => _initialLoadComplete;
 
-    /// <summary>
-    /// Initializes a new Client instance with the specified network bridge.
-    /// </summary>
-    /// <param name="bridge">The network bridge to use for communication with the server.</param>
     public Client(INetworkBridge bridge)
     {
         _bridge = bridge;
@@ -59,9 +45,7 @@ public class Client
     /// <summary>
     /// Requests chunks around a position with the specified view distance.
     /// </summary>
-    /// <param name="centerX">Center chunk X coordinate</param>
-    /// <param name="centerZ">Center chunk Z coordinate</param>
-    /// <param name="viewDistance">Number of chunks in each direction to request</param>
+    // Request chunks in a grid around center position
     public void RequestChunksAround(int centerX, int centerZ, int viewDistance = 4)
     {
         _chunksRequested = 0;
@@ -80,11 +64,7 @@ public class Client
         Console.WriteLine($"Requested {_chunksRequested} chunks");
     }
 
-    /// <summary>
-    /// Main entry point for the client application.
-    /// By default, starts with local server. Use --rendering to enable OpenTK window.
-    /// </summary>
-    /// <param name="args">Command line arguments. Use --rendering to enable OpenTK window.</param>
+    // Main entry point - starts client with local server or connects to network server
     public static void Main(string[] args)
     {
         // Check if rendering mode is enabled
@@ -171,28 +151,19 @@ public class Client
         }
     }
 
-    /// <summary>
-    /// Sends a packet to the server.
-    /// </summary>
-    /// <param name="packet">The packet to send.</param>
+    // Send packet to server
     public void SendPacket(Packet packet)
     {
         _bridge.Send(packet);
     }
     
-    /// <summary>
-    /// Polls the network bridge to process incoming packets.
-    /// Should be called regularly in the game loop.
-    /// </summary>
+    // Poll network bridge to process incoming packets - call regularly in game loop
     public void Poll()
     {
         _bridge.Poll();
     }
 
-    /// <summary>
-    /// Registers packet handlers for all incoming packet types.
-    /// Call this once after creating the client to begin processing server messages.
-    /// </summary>
+    // Register packet handlers - call once after creating client
     public void StartListening()
     {
         _bridge.RegisterHandler<CheckPacket>(_ => { Console.WriteLine("Received check packet from server."); });

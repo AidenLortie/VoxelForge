@@ -13,16 +13,10 @@ public class ShaderProgram : IDisposable
     private bool _disposed = false;
     private readonly Dictionary<string, int> _uniformLocations = new();
     
-    /// <summary>
-    /// Gets the OpenGL handle for this shader program.
-    /// </summary>
+    // /// Gets the OpenGL handle for this shader program.
     public int Handle => _handle;
     
-    /// <summary>
-    /// Creates a shader program from vertex and fragment shader source code.
-    /// </summary>
-    /// <param name="vertexSource">The vertex shader source code.</param>
-    /// <param name="fragmentSource">The fragment shader source code.</param>
+    // /// Creates a shader program from vertex and fragment shader source code.
     public ShaderProgram(string vertexSource, string fragmentSource)
     {
         // Create shaders
@@ -61,9 +55,7 @@ public class ShaderProgram : IDisposable
         CacheUniformLocations();
     }
     
-    /// <summary>
-    /// Caches all uniform locations for faster access.
-    /// </summary>
+    // /// Caches all uniform locations for faster access.
     private void CacheUniformLocations()
     {
         unsafe
@@ -86,19 +78,13 @@ public class ShaderProgram : IDisposable
         }
     }
     
-    /// <summary>
-    /// Activates this shader program for rendering.
-    /// </summary>
+    // /// Activates this shader program for rendering.
     public void Use()
     {
         GL.UseProgram(_handle);
     }
     
-    /// <summary>
-    /// Gets the location of a uniform variable.
-    /// </summary>
-    /// <param name="name">The name of the uniform.</param>
-    /// <returns>The uniform location, or -1 if not found.</returns>
+    // /// Gets the location of a uniform variable.
     public int GetUniformLocation(string name)
     {
         if (_uniformLocations.TryGetValue(name, out int location))
@@ -114,9 +100,7 @@ public class ShaderProgram : IDisposable
         return location;
     }
     
-    /// <summary>
-    /// Sets a float uniform value.
-    /// </summary>
+    // /// Sets a float uniform value.
     public void SetUniform(string name, float value)
     {
         int location = GetUniformLocation(name);
@@ -124,9 +108,7 @@ public class ShaderProgram : IDisposable
             GL.Uniform1f(location, value);
     }
     
-    /// <summary>
-    /// Sets an integer uniform value.
-    /// </summary>
+    // /// Sets an integer uniform value.
     public void SetUniform(string name, int value)
     {
         int location = GetUniformLocation(name);
@@ -134,9 +116,7 @@ public class ShaderProgram : IDisposable
             GL.Uniform1i(location, value);
     }
     
-    /// <summary>
-    /// Sets a Vector3 uniform value.
-    /// </summary>
+    // /// Sets a Vector3 uniform value.
     public void SetUniform(string name, Vector3 value)
     {
         int location = GetUniformLocation(name);
@@ -144,9 +124,7 @@ public class ShaderProgram : IDisposable
             GL.Uniform3f(location, value.X, value.Y, value.Z);
     }
     
-    /// <summary>
-    /// Sets a Vector4 uniform value.
-    /// </summary>
+    // /// Sets a Vector4 uniform value.
     public void SetUniform(string name, Vector4 value)
     {
         int location = GetUniformLocation(name);
@@ -154,9 +132,7 @@ public class ShaderProgram : IDisposable
             GL.Uniform4f(location, value.X, value.Y, value.Z, value.W);
     }
     
-    /// <summary>
-    /// Sets a Matrix4 uniform value.
-    /// </summary>
+    // /// Sets a Matrix4 uniform value.
     public void SetUniform(string name, Matrix4 value)
     {
         int location = GetUniformLocation(name);
@@ -169,9 +145,7 @@ public class ShaderProgram : IDisposable
         }
     }
     
-    /// <summary>
-    /// Disposes the shader program and frees GPU resources.
-    /// </summary>
+    // /// Disposes the shader program and frees GPU resources.
     public void Dispose()
     {
         if (!_disposed)

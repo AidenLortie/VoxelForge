@@ -15,12 +15,7 @@ public class WorldGenerator
         _random = seed == 0 ? new Random() : new Random(seed);
     }
     
-    /// <summary>
-    /// Generates a chunk with simple terrain.
-    /// </summary>
-    /// <param name="chunkX">Chunk X coordinate</param>
-    /// <param name="chunkZ">Chunk Z coordinate</param>
-    /// <returns>Generated chunk</returns>
+    // /// Generates a chunk with simple terrain.
     public Chunk GenerateChunk(int chunkX, int chunkZ)
     {
         var chunk = new Chunk(new Vector2(chunkX, chunkZ));

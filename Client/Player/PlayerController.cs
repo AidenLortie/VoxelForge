@@ -22,40 +22,26 @@ public class PlayerController
     private const float JumpVelocity = 8.0f;
     private const float TerminalVelocity = -50.0f;
     
-    /// <summary>
-    /// Gets or sets the player's position.
-    /// </summary>
+    // /// Gets or sets the player's position.
     public Vector3 Position
     {
         get => _position;
         set => _position = value;
     }
     
-    /// <summary>
-    /// Gets the player's velocity.
-    /// </summary>
+    // /// Gets the player's velocity.
     public Vector3 Velocity => _velocity;
     
-    /// <summary>
-    /// Gets whether the player is on the ground.
-    /// </summary>
+    // /// Gets whether the player is on the ground.
     public bool IsOnGround { get; private set; }
     
-    /// <summary>
-    /// Gets or sets whether gravity is enabled for this player.
-    /// </summary>
+    // /// Gets or sets whether gravity is enabled for this player.
     public bool GravityEnabled { get; set; } = true;
     
-    /// <summary>
-    /// Gets or sets whether collision detection is enabled.
-    /// </summary>
+    // /// Gets or sets whether collision detection is enabled.
     public bool CollisionEnabled { get; set; } = true;
     
-    /// <summary>
-    /// Creates a new PlayerController.
-    /// </summary>
-    /// <param name="world">The world for collision detection</param>
-    /// <param name="spawnPosition">Initial spawn position</param>
+    // /// Creates a new PlayerController.
     public PlayerController(World world, Vector3 spawnPosition)
     {
         _world = world;
@@ -63,10 +49,7 @@ public class PlayerController
         _velocity = Vector3.Zero;
     }
     
-    /// <summary>
-    /// Updates player physics.
-    /// </summary>
-    /// <param name="deltaTime">Time since last update in seconds</param>
+    // /// Updates player physics.
     public void Update(float deltaTime)
     {
         if (GravityEnabled)
@@ -106,11 +89,7 @@ public class PlayerController
         if (Math.Abs(_velocity.Z) < 0.01f) _velocity.Z = 0;
     }
     
-    /// <summary>
-    /// Moves the player in a direction.
-    /// </summary>
-    /// <param name="direction">Direction to move (should be normalized)</param>
-    /// <param name="speed">Movement speed</param>
+    // /// Moves the player in a direction.
     public void Move(Vector3 direction, float speed)
     {
         speed *= 0.9f;
@@ -131,9 +110,7 @@ public class PlayerController
         }
     }
     
-    /// <summary>
-    /// Makes the player jump if on ground.
-    /// </summary>
+    // /// Makes the player jump if on ground.
     public void Jump()
     {
         if (IsOnGround && GravityEnabled)
@@ -143,9 +120,7 @@ public class PlayerController
         }
     }
     
-    /// <summary>
-    /// Applies collision detection to movement.
-    /// </summary>
+    // /// Applies collision detection to movement.
     private Vector3 ApplyCollision(Vector3 movement)
     {
         IsOnGround = false;
@@ -205,9 +180,7 @@ public class PlayerController
         return result;
     }
     
-    /// <summary>
-    /// Checks if an AABB collides with any blocks in the world.
-    /// </summary>
+    // /// Checks if an AABB collides with any blocks in the world.
     private bool CheckAABBCollision(Vector3 min, Vector3 max)
     {
         // Get block coordinates to check
@@ -236,9 +209,7 @@ public class PlayerController
         return false;
     }
     
-    /// <summary>
-    /// Checks if a block at the given world coordinates is solid.
-    /// </summary>
+    // /// Checks if a block at the given world coordinates is solid.
     private bool IsBlockSolid(int x, int y, int z)
     {
         // Out of bounds checks

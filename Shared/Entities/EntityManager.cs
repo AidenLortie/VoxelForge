@@ -11,11 +11,7 @@ public class EntityManager
     private readonly ConcurrentDictionary<int, Entity> _entities = new();
     private int _nextEntityId = 1;
     
-    /// <summary>
-    /// Spawns a new entity and assigns it a unique ID.
-    /// </summary>
-    /// <param name="entity">The entity to spawn</param>
-    /// <returns>The assigned entity ID</returns>
+    // /// Spawns a new entity and assigns it a unique ID.
     public int SpawnEntity(Entity entity)
     {
         int entityId = _nextEntityId++;
@@ -24,11 +20,7 @@ public class EntityManager
         return entityId;
     }
     
-    /// <summary>
-    /// Spawns an entity with a specific ID (used for client-side entity sync).
-    /// </summary>
-    /// <param name="entity">The entity to spawn</param>
-    /// <param name="entityId">The entity ID to use</param>
+    // /// Spawns an entity with a specific ID (used for client-side entity sync).
     public void SpawnEntity(Entity entity, int entityId)
     {
         entity.EntityId = entityId;
@@ -40,40 +32,26 @@ public class EntityManager
         }
     }
     
-    /// <summary>
-    /// Removes an entity from the world.
-    /// </summary>
-    /// <param name="entityId">ID of the entity to despawn</param>
-    /// <returns>True if entity was removed, false if not found</returns>
+    // /// Removes an entity from the world.
     public bool DespawnEntity(int entityId)
     {
         return _entities.TryRemove(entityId, out _);
     }
     
-    /// <summary>
-    /// Gets an entity by ID.
-    /// </summary>
-    /// <param name="entityId">The entity ID</param>
-    /// <returns>The entity, or null if not found</returns>
+    // /// Gets an entity by ID.
     public Entity? GetEntity(int entityId)
     {
         _entities.TryGetValue(entityId, out var entity);
         return entity;
     }
     
-    /// <summary>
-    /// Gets all entities in the world.
-    /// </summary>
-    /// <returns>Collection of all entities</returns>
+    // /// Gets all entities in the world.
     public IEnumerable<Entity> GetAllEntities()
     {
         return _entities.Values;
     }
     
-    /// <summary>
-    /// Updates all entities.
-    /// </summary>
-    /// <param name="deltaTime">Time since last update in seconds</param>
+    // /// Updates all entities.
     public void UpdateAll(float deltaTime)
     {
         foreach (var entity in _entities.Values)
@@ -82,14 +60,10 @@ public class EntityManager
         }
     }
     
-    /// <summary>
-    /// Gets the total number of entities.
-    /// </summary>
+    // /// Gets the total number of entities.
     public int Count => _entities.Count;
     
-    /// <summary>
-    /// Clears all entities from the manager.
-    /// </summary>
+    // /// Clears all entities from the manager.
     public void Clear()
     {
         _entities.Clear();

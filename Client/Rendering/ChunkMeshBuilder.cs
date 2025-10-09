@@ -9,12 +9,8 @@ namespace VoxelForge.Client.Rendering;
 /// </summary>
 public class ChunkMeshBuilder
 {
-    /// <summary>
-    /// Generates a mesh from a chunk using greedy meshing algorithm.
-    /// Only generates faces that are exposed to air.
-    /// </summary>
-    /// <param name="chunk">The chunk to generate a mesh for</param>
-    /// <returns>Tuple of vertices and indices arrays</returns>
+    // /// Generates a mesh from a chunk using greedy meshing algorithm.
+    // Only generates faces that are exposed to air.
     public static (Models.Vertex[] vertices, uint[] indices) BuildMesh(Chunk chunk)
     {
         var vertices = new List<Models.Vertex>();

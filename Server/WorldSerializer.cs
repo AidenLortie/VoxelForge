@@ -16,11 +16,7 @@ public class WorldSerializer
         Directory.CreateDirectory(_savesDirectory);
     }
 
-    /// <summary>
-    /// Saves a world to disk with the specified seed.
-    /// </summary>
-    /// <param name="world">The world to save</param>
-    /// <param name="seed">The seed used to generate the world</param>
+    // /// Saves a world to disk with the specified seed.
     public void Save(World world, int seed)
     {
         string filePath = Path.Combine(_savesDirectory, $"world_{seed}.dat");
@@ -79,11 +75,7 @@ public class WorldSerializer
         Console.WriteLine($"World saved successfully!");
     }
 
-    /// <summary>
-    /// Loads a world from disk if it exists for the specified seed.
-    /// </summary>
-    /// <param name="seed">The seed of the world to load</param>
-    /// <returns>The loaded world, or null if no save exists</returns>
+    // /// Loads a world from disk if it exists for the specified seed.
     public World? Load(int seed)
     {
         string filePath = Path.Combine(_savesDirectory, $"world_{seed}.dat");
@@ -177,11 +169,7 @@ public class WorldSerializer
         }
     }
 
-    /// <summary>
-    /// Checks if a world save exists for the specified seed.
-    /// </summary>
-    /// <param name="seed">The seed to check</param>
-    /// <returns>True if a save exists, false otherwise</returns>
+    // /// Checks if a world save exists for the specified seed.
     public bool SaveExists(int seed)
     {
         string filePath = Path.Combine(_savesDirectory, $"world_{seed}.dat");

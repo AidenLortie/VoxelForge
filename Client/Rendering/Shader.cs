@@ -11,21 +11,13 @@ public class Shader : IDisposable
     private readonly ShaderType _type;
     private bool _disposed = false;
     
-    /// <summary>
-    /// Gets the OpenGL handle for this shader.
-    /// </summary>
+    // /// Gets the OpenGL handle for this shader.
     public int Handle => _handle;
     
-    /// <summary>
-    /// Gets the type of this shader.
-    /// </summary>
+    // /// Gets the type of this shader.
     public ShaderType Type => _type;
     
-    /// <summary>
-    /// Creates a shader from source code.
-    /// </summary>
-    /// <param name="source">The shader source code.</param>
-    /// <param name="type">The type of shader (vertex, fragment, etc.).</param>
+    // /// Creates a shader from source code.
     public Shader(string source, ShaderType type)
     {
         _type = type;
@@ -50,9 +42,7 @@ public class Shader : IDisposable
         Console.WriteLine($"Shader compiled successfully ({type})");
     }
     
-    /// <summary>
-    /// Disposes the shader and frees GPU resources.
-    /// </summary>
+    // /// Disposes the shader and frees GPU resources.
     public void Dispose()
     {
         if (!_disposed)

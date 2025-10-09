@@ -11,11 +11,7 @@ public class ModelManager : IDisposable
     private readonly Dictionary<string, Model> _models = new();
     private bool _disposed = false;
     
-    /// <summary>
-    /// Loads a model from a JSON file.
-    /// </summary>
-    /// <param name="filePath">Path to the JSON model file</param>
-    /// <returns>The loaded model</returns>
+    // /// Loads a model from a JSON file.
     public Model LoadFromFile(string filePath)
     {
         string json = File.ReadAllText(filePath);
@@ -27,11 +23,7 @@ public class ModelManager : IDisposable
         return LoadFromDefinition(definition);
     }
     
-    /// <summary>
-    /// Loads a model from a JSON string.
-    /// </summary>
-    /// <param name="json">JSON string containing model definition</param>
-    /// <returns>The loaded model</returns>
+    // /// Loads a model from a JSON string.
     public Model LoadFromJson(string json)
     {
         var definition = JsonSerializer.Deserialize<ModelDefinition>(json);
@@ -42,12 +34,8 @@ public class ModelManager : IDisposable
         return LoadFromDefinition(definition);
     }
     
-    /// <summary>
-    /// Loads a model from a ModelDefinition.
-    /// If a model with the same name already exists, returns the cached model.
-    /// </summary>
-    /// <param name="definition">Model definition to load</param>
-    /// <returns>The loaded or cached model</returns>
+    // /// Loads a model from a ModelDefinition.
+    // If a model with the same name already exists, returns the cached model.
     public Model LoadFromDefinition(ModelDefinition definition)
     {
         // Check if model already loaded
@@ -64,36 +52,26 @@ public class ModelManager : IDisposable
         return model;
     }
     
-    /// <summary>
-    /// Gets a cached model by name.
-    /// </summary>
-    /// <param name="name">Name of the model</param>
-    /// <returns>The model, or null if not found</returns>
+    // /// Gets a cached model by name.
     public Model? GetModel(string name)
     {
         _models.TryGetValue(name, out var model);
         return model;
     }
     
-    /// <summary>
-    /// Checks if a model with the given name is loaded.
-    /// </summary>
+    // /// Checks if a model with the given name is loaded.
     public bool HasModel(string name)
     {
         return _models.ContainsKey(name);
     }
     
-    /// <summary>
-    /// Gets all loaded model names.
-    /// </summary>
+    // /// Gets all loaded model names.
     public IEnumerable<string> GetModelNames()
     {
         return _models.Keys;
     }
     
-    /// <summary>
-    /// Unloads a specific model.
-    /// </summary>
+    // /// Unloads a specific model.
     public void UnloadModel(string name)
     {
         if (_models.TryGetValue(name, out var model))
@@ -104,9 +82,7 @@ public class ModelManager : IDisposable
         }
     }
     
-    /// <summary>
-    /// Disposes all models and frees GPU resources.
-    /// </summary>
+    // /// Disposes all models and frees GPU resources.
     public void Dispose()
     {
         if (!_disposed)
