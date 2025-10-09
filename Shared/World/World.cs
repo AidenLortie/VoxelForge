@@ -9,6 +9,21 @@ public class World
     Chunk[,,] Chunks { get; }
     
     /// <summary>
+    /// Gets the number of chunks in the X dimension.
+    /// </summary>
+    public int SizeX => Chunks.GetLength(0);
+    
+    /// <summary>
+    /// Gets the number of chunks in the Y dimension.
+    /// </summary>
+    public int SizeY => Chunks.GetLength(1);
+    
+    /// <summary>
+    /// Gets the number of chunks in the Z dimension.
+    /// </summary>
+    public int SizeZ => Chunks.GetLength(2);
+    
+    /// <summary>
     /// Initializes a new World with the specified dimensions.
     /// </summary>
     /// <param name="sizeX">The number of chunks in the X dimension.</param>

@@ -21,33 +21,48 @@ public class Server
 
     /// <summary>
     /// Initializes a new Server instance with the specified network bridge.
-    /// Creates a 16x16 chunk world with generated terrain.
+    /// Creates a 16x16 chunk world with generated terrain, or loads from disk if available.
     /// </summary>
     /// <param name="bridge">The network bridge to use for communication with clients.</param>
-    public Server(INetworkBridge bridge)
+    /// <param name="seed">The seed to use for world generation. Defaults to 12345.</param>
+    public Server(INetworkBridge bridge, int seed = 12345)
     {
         _bridge = bridge;
         
         // Initialize default blocks
         DefaultBlocks.Initialize();
         
-        // Create a 16x16 chunk world
-        _world = new World(16, 1, 16);
-        var generator = new WorldGenerator(12345); // Fixed seed for consistent world
+        // Try to load world from disk first
+        var serializer = new WorldSerializer();
+        _world = serializer.Load(seed);
         
-        Console.WriteLine("Generating 16x16 chunk world...");
-        
-        // Generate all chunks
-        for (int x = 0; x < 16; x++)
+        if (_world != null)
         {
-            for (int z = 0; z < 16; z++)
-            {
-                var chunk = generator.GenerateChunk(x, z);
-                _world.SetChunk(x, 0, z, chunk);
-            }
+            Console.WriteLine($"Loaded existing world for seed {seed}");
         }
-        
-        Console.WriteLine("World generation complete!");
+        else
+        {
+            Console.WriteLine($"Generating new 16x16 chunk world with seed {seed}...");
+            
+            // Create a 16x16 chunk world
+            _world = new World(16, 1, 16);
+            var generator = new WorldGenerator(seed);
+            
+            // Generate all chunks
+            for (int x = 0; x < 16; x++)
+            {
+                for (int z = 0; z < 16; z++)
+                {
+                    var chunk = generator.GenerateChunk(x, z);
+                    _world.SetChunk(x, 0, z, chunk);
+                }
+            }
+            
+            Console.WriteLine("World generation complete!");
+            
+            // Save the generated world
+            serializer.Save(_world, seed);
+        }
         
         // Register packet handlers
         bridge.RegisterHandler<CheckPacket>(packet =>
