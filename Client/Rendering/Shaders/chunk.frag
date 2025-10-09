@@ -6,11 +6,16 @@ in vec2 TexCoord;
 
 out vec4 FragColor;
 
+uniform sampler2D blockTexture;
+uniform vec3 blockColor; // Vertex color for different block types
+
 void main()
 {
-    // Use UV coordinates to determine vertex color (as per user request)
-    // This creates a colorful pattern based on texture coordinates
-    vec3 color = vec3(TexCoord.x, TexCoord.y, 0.5);
+    // Sample texture
+    vec4 texColor = texture(blockTexture, TexCoord);
+    
+    // Apply block color tint
+    vec3 color = texColor.rgb * blockColor;
     
     // Simple directional lighting
     vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
@@ -20,5 +25,5 @@ void main()
     vec3 ambient = vec3(0.3);
     vec3 lighting = ambient + diff * vec3(0.7);
     
-    FragColor = vec4(color * lighting, 1.0);
+    FragColor = vec4(color * lighting, texColor.a);
 }

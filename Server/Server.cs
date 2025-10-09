@@ -21,7 +21,7 @@ public class Server
 
     /// <summary>
     /// Initializes a new Server instance with the specified network bridge.
-    /// Creates a test world with a single chunk filled with demo data.
+    /// Creates a 16x16 chunk world with generated terrain.
     /// </summary>
     /// <param name="bridge">The network bridge to use for communication with clients.</param>
     public Server(INetworkBridge bridge)
@@ -31,30 +31,23 @@ public class Server
         // Initialize default blocks
         DefaultBlocks.Initialize();
         
-        // Create a simple world with one chunk
-        _world = new World(1, 1, 1);
-        var chunk = new Chunk(Vector2.Zero);
+        // Create a 16x16 chunk world
+        _world = new World(16, 1, 16);
+        var generator = new WorldGenerator(12345); // Fixed seed for consistent world
         
-        // Fill chunk with some test data
-        for(int x = 0; x < 16; x++)
+        Console.WriteLine("Generating 16x16 chunk world...");
+        
+        // Generate all chunks
+        for (int x = 0; x < 16; x++)
         {
-            for(int z = 0; z < 16; z++)
+            for (int z = 0; z < 16; z++)
             {
-                for (int y = 0; y < 256; y++)
-                {
-                    if (y % 16 == 0)
-                    {
-                        chunk.SetBlockStateId(x, y, z, 1); // Stone
-                    }
-                    else
-                    {
-                        chunk.SetBlockStateId(x, y, z, 0); // Air
-                    }
-                }
+                var chunk = generator.GenerateChunk(x, z);
+                _world.SetChunk(x, 0, z, chunk);
             }
         }
         
-        _world.SetChunk(0, 0, 0, chunk);
+        Console.WriteLine("World generation complete!");
         
         // Register packet handlers
         bridge.RegisterHandler<CheckPacket>(packet =>
@@ -81,15 +74,22 @@ public class Server
     /// <param name="packet">The chunk request packet from the client.</param>
     private void HandleChunkRequest(ChunkRequestPacket packet)
     {
-        // For now, just send the single chunk we have if it matches
-        if (packet.ChunkX == 0 && packet.ChunkZ == 0)
+        int chunkX = (int)packet.ChunkX;
+        int chunkZ = (int)packet.ChunkZ;
+        
+        // Check if chunk is within world bounds
+        if (chunkX >= 0 && chunkX < 16 && chunkZ >= 0 && chunkZ < 16)
         {
-            var chunk = _world.GetChunk(0, 0, 0);
+            var chunk = _world.GetChunk(chunkX, 0, chunkZ);
             if (chunk != null)
             {
                 _bridge.Send(new ChunkPacket(chunk));
-                Console.WriteLine("Sent chunk to client");
+                Console.WriteLine($"Sent chunk ({chunkX}, {chunkZ}) to client");
             }
+        }
+        else
+        {
+            Console.WriteLine($"Chunk ({chunkX}, {chunkZ}) is out of bounds");
         }
     }
 

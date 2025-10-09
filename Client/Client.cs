@@ -30,8 +30,8 @@ public class Client
         // Initialize default blocks
         DefaultBlocks.Initialize();
         
-        // Create a local world
-        _world = new World(1, 1, 1);
+        // Create a local world to match server (16x16 chunks)
+        _world = new World(16, 1, 16);
     }
     
     /// <summary>
@@ -41,6 +41,27 @@ public class Client
     public void SetChunkUpdateHandler(Action<Chunk> handler)
     {
         _chunkUpdateHandler = handler;
+    }
+    
+    /// <summary>
+    /// Requests chunks around a position with the specified view distance.
+    /// </summary>
+    /// <param name="centerX">Center chunk X coordinate</param>
+    /// <param name="centerZ">Center chunk Z coordinate</param>
+    /// <param name="viewDistance">Number of chunks in each direction to request</param>
+    public void RequestChunksAround(int centerX, int centerZ, int viewDistance = 4)
+    {
+        for (int x = centerX - viewDistance; x <= centerX + viewDistance; x++)
+        {
+            for (int z = centerZ - viewDistance; z <= centerZ + viewDistance; z++)
+            {
+                // Only request chunks within world bounds
+                if (x >= 0 && x < 16 && z >= 0 && z < 16)
+                {
+                    RequestChunk(x, z);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -94,8 +115,8 @@ public class Client
         // Start listening for incoming packets
         client.StartListening();
 
-        // Request the initial chunk
-        client.SendPacket(new ChunkRequestPacket(0, 0));
+        // Request chunks around spawn (8, 8 is center of 16x16 world)
+        client.RequestChunksAround(8, 8, 4); // Request 4 chunks in each direction
         
         // Create and run the rendering window
         using var window = new Rendering.GameWindow(client);
@@ -128,8 +149,8 @@ public class Client
         // Start listening for incoming packets
         client.StartListening();
 
-        // Request the initial chunk
-        client.SendPacket(new ChunkRequestPacket(0, 0));
+        // Request chunks around spawn
+        client.RequestChunksAround(8, 8, 2); // Request 2 chunks in each direction for console mode
         
         // Main loop
         while (true)

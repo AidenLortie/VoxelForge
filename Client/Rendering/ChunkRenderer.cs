@@ -11,14 +11,25 @@ public class ChunkRenderer : IDisposable
 {
     private readonly Dictionary<Vector2i, Models.Model> _chunkMeshes = new();
     private readonly ShaderProgram _shader;
+    private readonly Texture _texture;
     private bool _disposed = false;
     
+    // Block colors for different block types (using block state IDs)
+    private readonly Dictionary<ushort, Vector3> _blockColors = new()
+    {
+        { 0, new Vector3(1.0f, 1.0f, 1.0f) }, // Air (white, shouldn't be rendered)
+        { 1, new Vector3(0.5f, 0.5f, 0.5f) }, // Stone (gray)
+        { 2, new Vector3(0.4f, 0.8f, 0.3f) }, // Grass (green)
+        { 3, new Vector3(0.6f, 0.4f, 0.2f) }, // Dirt (brown)
+    };
+    
     /// <summary>
-    /// Creates a new ChunkRenderer with the specified shader.
+    /// Creates a new ChunkRenderer with the specified shader and texture.
     /// </summary>
-    public ChunkRenderer(ShaderProgram shader)
+    public ChunkRenderer(ShaderProgram shader, Texture texture)
     {
         _shader = shader;
+        _texture = texture;
     }
     
     /// <summary>
@@ -71,6 +82,13 @@ public class ChunkRenderer : IDisposable
         _shader.Use();
         _shader.SetUniform("view", view);
         _shader.SetUniform("projection", projection);
+        
+        // Bind texture
+        _texture.Bind(0);
+        _shader.SetUniform("blockTexture", 0);
+        
+        // Default block color (white for stone)
+        _shader.SetUniform("blockColor", _blockColors.GetValueOrDefault((ushort)1, Vector3.One));
         
         foreach (var kvp in _chunkMeshes)
         {

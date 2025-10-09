@@ -16,6 +16,7 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
     private Camera? _camera;
     private ShaderProgram? _chunkShader;
     private ChunkRenderer? _chunkRenderer;
+    private Texture? _blockTexture;
     private Vector2 _lastMousePos;
     private bool _firstMove = true;
     
@@ -76,8 +77,8 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         // set winding direction to counter-clockwise
         GL.FrontFace(FrontFaceDirection.Cw);
         
-        // Initialize camera
-        _camera = new Camera(new Vector3(0, 10, 20));
+        // Initialize camera at center of world (8*16 = 128 blocks, elevated for view)
+        _camera = new Camera(new Vector3(128, 60, 128));
         _camera.AspectRatio = (float)Size.X / Size.Y;
         
         // Load shaders
@@ -85,8 +86,11 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         string fragmentSource = File.ReadAllText("Rendering/Shaders/chunk.frag");
         _chunkShader = new ShaderProgram(vertexSource, fragmentSource);
         
+        // Load block texture
+        _blockTexture = new Texture("Assets/Textures/Blocks/default.png");
+        
         // Initialize chunk renderer
-        _chunkRenderer = new ChunkRenderer(_chunkShader);
+        _chunkRenderer = new ChunkRenderer(_chunkShader, _blockTexture);
         
         // Capture mouse for camera control
         CursorState = CursorState.Grabbed;
@@ -216,5 +220,6 @@ public class GameWindow : OpenTK.Windowing.Desktop.GameWindow
         // Clean up rendering resources
         _chunkRenderer?.Dispose();
         _chunkShader?.Dispose();
+        _blockTexture?.Dispose();
     }
 }
