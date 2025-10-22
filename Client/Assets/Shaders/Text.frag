@@ -1,14 +1,15 @@
 ﻿#version 330 core
 
-in vec2 vTexCoords;
-in vec4 vForegroundColor;
-in vec4 vBackgroundColor;
+in vec2 vTexCoord;
+in vec3 vForegroundColor;
+in vec3 vBackgroundColor;
 
 out vec4 FragColor;
 uniform sampler2D uTexture;
 
 void main()
 {
-    float alpha = texture(uTexture, vTexCoords).a;
-    FragColor = mix(vBackgroundColor, vForegroundColor, alpha);
+    float alpha = texture(uTexture, vTexCoord).r;
+    vec3 color = mix(vBackgroundColor, vForegroundColor, alpha);
+    FragColor = vec4(color, 1.0);
 }

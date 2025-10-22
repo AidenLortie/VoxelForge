@@ -66,6 +66,10 @@ public class Client
         TextureRepository.Init();
         Console.WriteLine("Texture repository initialized with: " + TextureRepository.MaxGlTextureCount + " textures available.");
         
+        TextRenderer.Init();
+        TextRenderer.SetScreenSize(1280, 720);
+        Console.WriteLine("Text renderer initialized.");
+        
         void HandleEvents(PalHandle? handle, PlatformEventType type, EventArgs args)
         {
             switch (args)
@@ -75,6 +79,7 @@ public class Client
                     break;
                 case WindowResizeEventArgs resizeEvent:
                     GL.Viewport(0, 0, resizeEvent.NewSize.X, resizeEvent.NewSize.Y);
+                    TextRenderer.SetScreenSize(resizeEvent.NewSize.X, resizeEvent.NewSize.Y);
                     break;
                 default:
                     if (_uiContext.State != null)

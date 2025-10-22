@@ -1,5 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 using OpenTK.Platform;
+using VoxelForge.Client.Rendering;
 
 namespace VoxelForge.Client.UI;
 
@@ -9,6 +11,7 @@ public class BootUiContext : UiContext
     private int _vbo;
     private int _ebo;
     private int _shader;
+    private double _fps = 0.0;
     private string _vertexShaderSource = @"
         #version 330 core
         layout(location = 0) in vec3 aPosition;
@@ -98,10 +101,16 @@ public class BootUiContext : UiContext
 
     public override void Update(double deltaTime)
     {
+        // Calculate FPS from deltaTime
+        if (deltaTime > 0)
+        {
+            _fps = 1.0 / deltaTime;
+        }
     }
 
     public override void Render()
-    {GL.Clear(ClearBufferMask.ColorBufferBit);
+    {
+        GL.Clear(ClearBufferMask.ColorBufferBit);
         GL.UseProgram(_shader);
         GL.BindVertexArray(_vao);
         
@@ -111,5 +120,15 @@ public class BootUiContext : UiContext
         GL.EnableVertexAttribArray(1);
         GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
         GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+        
+        // Enable blending for text rendering
+        GL.Enable(EnableCap.Blend);
+        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        
+        // Render FPS text in top-left corner with padding
+        string fpsText = $"FPS: {_fps:0.00}";
+        TextRenderer.Render(fpsText, 16, new Vector3(1.0f, 1.0f, 1.0f), 10, 10);
+        
+        GL.Disable(EnableCap.Blend);
     }
 }
