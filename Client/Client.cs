@@ -1,269 +1,166 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using VoxelForge.Shared.Content.Blocks;
+﻿
+
+using System.Diagnostics;
+using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
+using OpenTK.Platform;
+using OpenTK.Windowing.Common;
+using VoxelForge.Client.Rendering;
+using VoxelForge.Client.UI;
+using VoxelForge.Shared.Log;
 using VoxelForge.Shared.Networking;
-using VoxelForge.Shared.Networking.NetworkBridge;
 using VoxelForge.Shared.Networking.Packets;
-using VoxelForge.Shared.Registry;
-using VoxelForge.Shared.World;
+using VoxelForge.Shared.State;
 
 namespace VoxelForge.Client;
 
-// Game client - handles connection to server, receives world data, sends player actions
+public struct ClientConsoleArgs
+{
+    public bool Debug;
+}
+
 public class Client
 {
-    private readonly INetworkBridge _bridge;
-    private readonly World _world;
-    private Action<Chunk>? _chunkUpdateHandler;
-    private int _chunksLoaded = 0;
-    private int _chunksRequested = 0;
-    private bool _initialLoadComplete = false;
-    
-    public World World => _world;
-    public bool IsInitialLoadComplete => _initialLoadComplete;
-
-    public Client(INetworkBridge bridge)
-    {
-        _bridge = bridge;
-        
-        // Initialize default blocks
-        DefaultBlocks.Initialize();
-        
-        // Create a local world to match server (16x16 chunks)
-        _world = new World(16, 1, 16);
-    }
-    
-    /// <summary>
-    /// Sets a handler that will be called when a chunk is received or updated.
-    /// </summary>
-    /// <param name="handler">The handler to call with the chunk</param>
-    public void SetChunkUpdateHandler(Action<Chunk> handler)
-    {
-        _chunkUpdateHandler = handler;
-    }
-    
-    /// <summary>
-    /// Requests chunks around a position with the specified view distance.
-    /// </summary>
-    // Request chunks in a grid around center position
-    public void RequestChunksAround(int centerX, int centerZ, int viewDistance = 4)
-    {
-        _chunksRequested = 0;
-        for (int x = centerX - viewDistance; x <= centerX + viewDistance; x++)
-        {
-            for (int z = centerZ - viewDistance; z <= centerZ + viewDistance; z++)
-            {
-                // Only request chunks within world bounds
-                if (x >= 0 && x < 16 && z >= 0 && z < 16)
-                {
-                    RequestChunk(x, z);
-                    _chunksRequested++;
-                }
-            }
-        }
-        Console.WriteLine($"Requested {_chunksRequested} chunks");
-    }
-
-    // Main entry point - shows menu then starts client in selected mode
+    public static readonly ConsoleLogger _logger = new ConsoleLogger();
+    private ClientConsoleArgs _args;
+    private UiStateMachine _uiContext = new UiStateMachine();
+    private INetworkBridge? _networkBridge;
     public static void Main(string[] args)
     {
-        // Check for command line override
-        bool forceRendering = args.Contains("--rendering");
-        bool forceConsole = args.Contains("--console");
-        
-        if (forceRendering)
+        var consoleArgs = new ClientConsoleArgs();
+        foreach (var arg in args)
         {
-            Console.WriteLine("Starting in single player mode (command line override)...");
-            RunSinglePlayer();
-        }
-        else if (forceConsole)
-        {
-            Console.WriteLine("Starting in multiplayer mode (command line override)...");
-            RunMultiplayer();
-        }
-        else
-        {
-            // Show menu and let user choose
-            using var menu = new UI.MenuWindow();
-            menu.Run();
-            
-            if (menu.ShouldStartSinglePlayer)
+            if (arg == "--debug")
             {
-                RunSinglePlayer();
-            }
-            else if (menu.ShouldStartMultiplayer)
-            {
-                RunMultiplayer();
-            }
-            else
-            {
-                Console.WriteLine("Exiting...");
+                consoleArgs.Debug = true;
             }
         }
+        
+        var client = new Client(consoleArgs);
+        client.Run();
     }
+
+    public Client(ClientConsoleArgs args)
+    {
+        _args = args;
+        _logger.Info("Starting Client . . .");
+    } 
     
-    // Run in single player mode with local server
-    private static void RunSinglePlayer()
+    private void Run()
     {
-        // Create local bridges for client and server
-        var clientBridge = new NetworkBridgeLocal();
-        var serverBridge = new NetworkBridgeLocal();
-        clientBridge.ConnectTo(serverBridge);
-        
-        // Start local server in background
-        var server = new VoxelForge.Server.Server(serverBridge);
-        Task.Run(async () => await server.RunAsync());
-        
-        Console.WriteLine("Local server started");
-
-        var client = new Client(clientBridge);
-
-        // Start listening for incoming packets
-        client.StartListening();
-
-        // Request chunks around spawn (8, 8 is center of 16x16 world)
-        client.RequestChunksAround(8, 8, 4); // Request 4 chunks in each direction
-        
-        // Create and run the rendering window
-        using var window = new Rendering.GameWindow(client);
-        
-        // Set up chunk update handler
-        client.SetChunkUpdateHandler(chunk =>
+        if (_args.Debug)
         {
-            window.ChunkRenderer?.UpdateChunk(chunk);
-        });
+            _logger.Level = LogLevel.Debug;
+            _logger.Debug("Debug mode enabled.");
+        }
         
-        window.Run();
+        _logger.Info("Client is running.");
+
+        ToolkitOptions options = new ToolkitOptions();
+        Toolkit.Init(options);
         
-        Console.WriteLine("Window closed");
-    }
-    
-    // Run in multiplayer mode connecting to network server
-    private static void RunMultiplayer()
-    {
-        // Connect to server
-        var clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        clientSocket.Connect(IPAddress.Loopback, 25565);
-
-        var stream = new NetworkStream(clientSocket);
-        var bridgeNet = new NetworkBridgeNet(stream, PacketRegistry.Factories);
-
-        var client = new Client(bridgeNet);
-
-        // Start listening for incoming packets
-        client.StartListening();
-
-        // Request chunks around spawn (same as single player)
-        client.RequestChunksAround(8, 8, 4); // Request 4 chunks in each direction
+        OpenGLGraphicsApiHints hints = new OpenGLGraphicsApiHints();
+        WindowHandle window = Toolkit.Window.Create(hints);
+        OpenGLContextHandle  context = Toolkit.OpenGL.CreateFromWindow(window);
         
-        // Create and run the rendering window (same as single player)
-        using var window = new Rendering.GameWindow(client);
+        Toolkit.OpenGL.SetCurrentContext(context);
+        OpenTK.Graphics.GLLoader.LoadBindings(Toolkit.OpenGL.GetBindingsContext(context));
         
-        // Set up chunk update handler
-        client.SetChunkUpdateHandler(chunk =>
+        TextureRepository.Init();
+        _logger.Info("Texture repository initialized with: " + TextureRepository.MaxGlTextureCount + " textures available.");
+        
+        void HandleEvents(PalHandle? handle, PlatformEventType type, EventArgs args)
         {
-            window.ChunkRenderer?.UpdateChunk(chunk);
-        });
-        
-        window.Run();
-        
-        Console.WriteLine("Window closed");
-    }
+            switch (args)
+            {
+                case CloseEventArgs closeEvent:
+                    Toolkit.Window.Destroy(window);
+                    break;
+                case WindowResizeEventArgs resizeEvent:
+                    GL.Viewport(0, 0, resizeEvent.NewSize.X, resizeEvent.NewSize.Y);
+                    break;
+                default:
+                    if (_uiContext.State != null)
+                    {
+                        _uiContext.State.HandleEvents(handle, type, args);
+                    }
+                    break;
+                    
+            }
+        }
 
-    // Send packet to server
-    public void SendPacket(Packet packet)
-    {
-        _bridge.Send(packet);
-    }
-    
-    // Poll network bridge to process incoming packets - call regularly in game loop
-    public void Poll()
-    {
-        _bridge.Poll();
-    }
-
-    // Register packet handlers - call once after creating client
-    public void StartListening()
-    {
-        _bridge.RegisterHandler<CheckPacket>(_ => { Console.WriteLine("Received check packet from server."); });
+        EventQueue.EventRaised += HandleEvents;
         
-        _bridge.RegisterHandler<BlockStateRegistryPacket>(packet =>
+        Toolkit.Window.SetMode(window, WindowMode.Normal);
+        Toolkit.Window.SetTitle(window, "VoxelForge Client");
+        Toolkit.Window.SetSize(window, new Vector2i(1280, 720));
+        
+        // Disable V-Sync
+        Toolkit.OpenGL.SetSwapInterval(0);
+        
+        GL.Viewport(0, 0, 1280, 720);
+        GL.Enable(EnableCap.DepthTest);
+        GL.ClearColor(0.2f, 0.3f, 0.4f, 1.0f);
+
+
+        _uiContext.SetState(new BootUiContext(_uiContext));
+
+        _networkBridge = new NetworkBridgeLocal();
+        Server.Server server = new Server.Server(_networkBridge);
+        Thread serverThread = new Thread(() =>
         {
-            Console.WriteLine($"Received BlockState registry ({packet.StateIdToString.Count} states)");
-            BlockStateRegistry.ImportMappings(packet.StateIdToString);
-            Console.WriteLine("BlockState registry synchronized with server");
+            server.RunAsync();
         });
         
-        _bridge.RegisterHandler<ChunkPacket>(packet => 
-        { 
-            Console.WriteLine($"Received chunk packet from server at ({packet.Chunk.GetWorldPosition().X}, {packet.Chunk.GetWorldPosition().Z})");
-            
-            // Store chunk in local world
-            var chunkPos = packet.Chunk.GetChunkPosition();
-            _world.SetChunk((int)chunkPos.X, 0, (int)chunkPos.Y, packet.Chunk);
-            Console.WriteLine("Stored chunk in local world");
-            
-            // Track loading progress
-            _chunksLoaded++;
-            if (_chunksRequested > 0 && _chunksLoaded >= _chunksRequested && !_initialLoadComplete)
-            {
-                _initialLoadComplete = true;
-                Console.WriteLine($"Initial chunk loading complete! ({_chunksLoaded}/{_chunksRequested} chunks)");
-            }
-            else if (_chunksRequested > 0)
-            {
-                Console.WriteLine($"Loading progress: {_chunksLoaded}/{_chunksRequested} chunks");
-            }
-            
-            // Notify handler if set
-            _chunkUpdateHandler?.Invoke(packet.Chunk);
+        
+        _networkBridge.RegisterHandler((CheckPacket packet) =>
+        {
+            _logger.Info("Received check packet from server with timestamp: " + packet.Timestamp);
         });
         
-        _bridge.RegisterHandler<ChunkRequestPacket>(_ => { Console.WriteLine("Received chunk request from server."); });
-        
-        _bridge.RegisterHandler<UpdateBlockPacket>(packet => 
-        { 
-            Console.WriteLine($"Received block update at ({packet.X}, {packet.Y}, {packet.Z})");
-            
-            // Update block in local world
-            try
-            {
-                int chunkX = packet.X / 16;
-                int chunkZ = packet.Z / 16;
-                
-                var chunk = _world.GetChunk(chunkX, 0, chunkZ);
-                if (chunk != null)
-                {
-                    chunk.SetBlockStateId(packet.X % 16, packet.Y, packet.Z % 16, packet.BlockStateId);
-                    Console.WriteLine("Updated block in local world");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error updating block: {ex.Message}");
-            }
+        _networkBridge.RegisterHandler((ChunkPacket packet) =>
+        {
+            _logger.Info("Received chunk packet for (" + packet.Chunk.GetChunkPosition().X + " , " + packet.Chunk.GetChunkPosition().Y + ")");
         });
-    }
+        
+        
+        //serverThread.Start();
 
-    /// <summary>
-    /// Requests a specific chunk from the server.
-    /// </summary>
-    /// <param name="chunkX">The X coordinate of the chunk to request.</param>
-    /// <param name="chunkZ">The Z coordinate of the chunk to request.</param>
-    public void RequestChunk(float chunkX, float chunkZ)
-    {
-        SendPacket(new ChunkRequestPacket(chunkX, chunkZ));
-    }
+        double lastTime = 0;
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
 
-    /// <summary>
-    /// Sends a block update to the server.
-    /// </summary>
-    /// <param name="x">The world X coordinate of the block.</param>
-    /// <param name="y">The world Y coordinate of the block.</param>
-    /// <param name="z">The world Z coordinate of the block.</param>
-    /// <param name="blockStateId">The new block state ID.</param>
-    public void UpdateBlock(int x, int y, int z, ushort blockStateId)
-    {
-        SendPacket(new UpdateBlockPacket(x, y, z, blockStateId));
+        _logger.Info(GL.GetString(StringName.Renderer) + "");
+        
+        // Main loop
+        while (true)
+        {
+            Toolkit.Window.ProcessEvents(false);
+            if (Toolkit.Window.IsWindowDestroyed(window)) break;
+            
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            
+            
+            _networkBridge.Poll();
+            _networkBridge.Send(new CheckPacket(0));
+
+            double currentTime = stopwatch.Elapsed.TotalSeconds;
+            double deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            float fps = 1 / (float) deltaTime;
+            // display fps rounded to 2 decimal, with 4 pre-decimal places
+            Toolkit.Window.SetTitle(window, $"VoxelForge Client - FPS { fps,4:0.00}");
+            
+            _uiContext.State.Update(deltaTime);
+            
+            _uiContext.State.Render();
+
+            Toolkit.OpenGL.SwapBuffers(context);
+            
+        }
+
+        _logger.Info("Client is shutting down.");
+        _logger.Dispose();
     }
 }
