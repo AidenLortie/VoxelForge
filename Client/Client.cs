@@ -7,7 +7,6 @@ using OpenTK.Platform;
 using OpenTK.Windowing.Common;
 using VoxelForge.Client.Rendering;
 using VoxelForge.Client.UI;
-using VoxelForge.Shared.Log;
 using VoxelForge.Shared.Networking;
 using VoxelForge.Shared.Networking.Packets;
 using VoxelForge.Shared.State;
@@ -21,7 +20,6 @@ public struct ClientConsoleArgs
 
 public class Client
 {
-    public static readonly ConsoleLogger _logger = new ConsoleLogger();
     private ClientConsoleArgs _args;
     private UiStateMachine _uiContext = new UiStateMachine();
     private INetworkBridge? _networkBridge;
@@ -43,18 +41,17 @@ public class Client
     public Client(ClientConsoleArgs args)
     {
         _args = args;
-        _logger.Info("Starting Client . . .");
+        Console.WriteLine("Starting Client . . .");
     } 
     
     private void Run()
     {
         if (_args.Debug)
         {
-            _logger.Level = LogLevel.Debug;
-            _logger.Debug("Debug mode enabled.");
+            Console.WriteLine("Debug mode enabled.");
         }
         
-        _logger.Info("Client is running.");
+        Console.WriteLine("Client is running.");
 
         ToolkitOptions options = new ToolkitOptions();
         Toolkit.Init(options);
@@ -67,7 +64,11 @@ public class Client
         OpenTK.Graphics.GLLoader.LoadBindings(Toolkit.OpenGL.GetBindingsContext(context));
         
         TextureRepository.Init();
-        _logger.Info("Texture repository initialized with: " + TextureRepository.MaxGlTextureCount + " textures available.");
+        Console.WriteLine("Texture repository initialized with: " + TextureRepository.MaxGlTextureCount + " textures available.");
+        
+        TextRenderer.Init();
+        TextRenderer.SetScreenSize(1280, 720);
+        Console.WriteLine("Text renderer initialized.");
         
         void HandleEvents(PalHandle? handle, PlatformEventType type, EventArgs args)
         {
@@ -78,6 +79,7 @@ public class Client
                     break;
                 case WindowResizeEventArgs resizeEvent:
                     GL.Viewport(0, 0, resizeEvent.NewSize.X, resizeEvent.NewSize.Y);
+                    TextRenderer.SetScreenSize(resizeEvent.NewSize.X, resizeEvent.NewSize.Y);
                     break;
                 default:
                     if (_uiContext.State != null)
@@ -115,12 +117,12 @@ public class Client
         
         _networkBridge.RegisterHandler((CheckPacket packet) =>
         {
-            _logger.Info("Received check packet from server with timestamp: " + packet.Timestamp);
+            Console.WriteLine("Received check packet from server with timestamp: " + packet.Timestamp);
         });
         
         _networkBridge.RegisterHandler((ChunkPacket packet) =>
         {
-            _logger.Info("Received chunk packet for (" + packet.Chunk.GetChunkPosition().X + " , " + packet.Chunk.GetChunkPosition().Y + ")");
+            Console.WriteLine("Received chunk packet for (" + packet.Chunk.GetChunkPosition().X + " , " + packet.Chunk.GetChunkPosition().Y + ")");
         });
         
         
@@ -130,7 +132,7 @@ public class Client
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        _logger.Info(GL.GetString(StringName.Renderer) + "");
+        Console.WriteLine(GL.GetString(StringName.Renderer) + "");
         
         // Main loop
         while (true)
@@ -160,7 +162,6 @@ public class Client
             
         }
 
-        _logger.Info("Client is shutting down.");
-        _logger.Dispose();
+        Console.WriteLine("Client is shutting down.");
     }
 }
