@@ -9,7 +9,7 @@ uniform sampler2D uTexture;
 
 void main()
 {
-    float alpha = texture(uTexture, vTexCoord).r;
+    float alpha = texture(uTexture, vTexCoord).a;
     vec3 color = mix(vBackgroundColor, vForegroundColor, alpha);
     FragColor = vec4(color, 1.0);
 }

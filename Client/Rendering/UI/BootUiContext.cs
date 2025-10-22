@@ -35,8 +35,6 @@ public class BootUiContext : UiContext
 
         void main()
         {
-
-            float alpha = 
             if (abs(vColor.x) + abs(vColor.y) > 0.0)
             {
                 // convert x y (-1, 1) to 0, 1
